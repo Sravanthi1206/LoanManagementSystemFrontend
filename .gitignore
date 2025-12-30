@@ -1,0 +1,20 @@
+﻿# Dependencies
+node_modules/
+.npm/
+
+# Build
+dist/
+.angular/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Config
+.env
+.env.local
