@@ -175,6 +175,56 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
           </div>
         </div>
       </div>
+
+      <!-- Approved Loans -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Recently Approved Loans</h5>
+            </div>
+            <div class="card-body">
+              <div *ngIf="approvedLoans().length === 0" class="text-center py-4">
+                <p class="text-muted">No approved loans</p>
+              </div>
+
+              <div *ngIf="approvedLoans().length > 0" class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Loan ID</th>
+                      <th>Customer ID</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Approved Amount</th>
+                      <th>Approved On</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let loan of approvedLoans()">
+                      <td>#{{ loan.loanId }}</td>
+                      <td>{{ loan.userId }}</td>
+                      <td>{{ getLoanTypeDisplay(loan.type) }}</td>
+                      <td>₹{{ loan.amountRequested | number }}</td>
+                      <td>₹{{ loan.amountApproved | number }}</td>
+                      <td>{{ loan.approvedOn | date: 'shortDate' }}</td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-info"
+                                (click)="viewDetails(loan)">
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
     </div>
 
     <!-- Loan Details Modal -->
@@ -385,6 +435,7 @@ export class OfficerDashboardComponent implements OnInit {
   stats = signal<DashboardStats | null>(null);
   pendingLoans = signal<Loan[]>([]);
   underReviewLoans = signal<Loan[]>([]);
+  approvedLoans = signal<Loan[]>([]);
   loading = signal(true);
   processing = signal(false);
 
@@ -434,6 +485,11 @@ export class OfficerDashboardComponent implements OnInit {
 
     this.officerApi.getUnderReviewLoans().subscribe({
       next: (response) => this.underReviewLoans.set(response.content),
+      error: () => { }
+    });
+
+    this.officerApi.getApprovedLoans().subscribe({
+      next: (response) => this.approvedLoans.set(response.content),
       error: () => { }
     });
   }

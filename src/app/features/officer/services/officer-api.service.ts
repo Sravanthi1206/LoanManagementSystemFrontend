@@ -46,6 +46,13 @@ export class OfficerApiService {
     return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/admin/under-review`, { params });
   }
 
+  getApprovedLoans(page: number = 0, size: number = 10): Observable<PageResponse<Loan>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/admin/by-status/APPROVED`, { params });
+  }
+
   startReview(loanId: number, officerId: number): Observable<Loan> {
     return this.http.put<Loan>(`${this.apiUrl}/loans/admin/${loanId}/review`, {}, {
       headers: { 'X-User-Id': officerId.toString() }
