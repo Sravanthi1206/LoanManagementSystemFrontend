@@ -260,6 +260,31 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
 
 
 
+
+    <!-- Credit Check Confirmation Modal -->
+    <div class="modal-overlay" *ngIf="creditCheckLoan()" (click)="creditCheckLoan.set(null)">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Credit Check</h5>
+            <button type="button" class="btn-close" (click)="creditCheckLoan.set(null)">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>Run automated credit check for Loan <strong>#{{ creditCheckLoan()?.loanId }}</strong>?</p>
+            <p class="text-muted small">This will fetch credit history and generate a score.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="creditCheckLoan.set(null)">Cancel</button>
+            <button type="button" class="btn btn-primary" (click)="confirmCreditCheck()" [disabled]="processing()">
+              <span *ngIf="!processing()">Confirm Check</span>
+              <span *ngIf="processing()"><span class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Approve Modal -->
     <div class="modal-overlay" *ngIf="approveLoan()" (click)="approveLoan.set(null)">
       <div class="modal-dialog" (click)="$event.stopPropagation()">
@@ -511,15 +536,19 @@ export class OfficerDashboardComponent implements OnInit {
 
   runCreditCheck(loan: Loan): void {
     if (!loan) return;
+    this.creditCheckLoan.set(loan);
+  }
 
-    // Optional: Add a confirm dialog or just run it
-    if (!confirm(`Run automated credit check for Loan #${loan.loanId}?`)) return;
+  confirmCreditCheck(): void {
+    const loan = this.creditCheckLoan();
+    if (!loan) return;
 
     this.processing.set(true);
     // Pass null/0 for score to trigger backend automation
     this.officerApi.performCreditCheck(loan.loanId, 0, 'Automated Credit Check').subscribe({
       next: () => {
         this.processing.set(false);
+        this.creditCheckLoan.set(null);
         this.showToast('Credit check completed successfully');
         this.loadDashboardData();
       },
@@ -529,9 +558,6 @@ export class OfficerDashboardComponent implements OnInit {
       }
     });
   }
-
-  // Removing confirmCreditCheck since we merged it above
-  // Removing showCreditCheckModal
 
   showApproveModal(loan: Loan): void {
     this.approvedAmount = loan.amountRequested;
