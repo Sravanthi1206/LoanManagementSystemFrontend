@@ -163,8 +163,9 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
                           Reject
                         </button>
                         <button class="btn btn-sm btn-outline-warning"
-                                (click)="showCreditCheckModal(loan)">
-                          Credit Check
+                                (click)="runCreditCheck(loan)"
+                                [disabled]="!!loan.creditScore">
+                          {{ loan.creditScore ? 'Checked' : 'Run Credit Check' }}
                         </button>
                       </td>
                     </tr>
@@ -257,34 +258,7 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
       </div>
     </div>
 
-    <!-- Credit Check Modal -->
-    <div class="modal-overlay" *ngIf="creditCheckLoan()" (click)="creditCheckLoan.set(null)">
-      <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Credit Check - Loan #{{ creditCheckLoan()?.loanId }}</h5>
-            <button type="button" class="btn-close" (click)="creditCheckLoan.set(null)">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">Credit Score (300-900)</label>
-              <input type="number" class="form-control" [(ngModel)]="creditScore" min="300" max="900" placeholder="Enter credit score">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Remarks</label>
-              <textarea class="form-control" [(ngModel)]="creditRemarks" rows="2" placeholder="Optional remarks"></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="creditCheckLoan.set(null)">Cancel</button>
-            <button type="button" class="btn btn-primary" (click)="confirmCreditCheck()" [disabled]="!creditScore || processing()">
-              <span *ngIf="!processing()">Submit</span>
-              <span *ngIf="processing()"><span class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Approve Modal -->
     <div class="modal-overlay" *ngIf="approveLoan()" (click)="approveLoan.set(null)">
@@ -532,22 +506,21 @@ export class OfficerDashboardComponent implements OnInit {
     });
   }
 
-  showCreditCheckModal(loan: Loan): void {
-    this.creditScore = loan.creditScore || 0;
-    this.creditRemarks = '';
-    this.creditCheckLoan.set(loan);
-  }
+  // showCreditCheckModal is no longer needed for manual input
+  // We can rename confirmCreditCheck to runCreditCheck or keep it
 
-  confirmCreditCheck(): void {
-    const loan = this.creditCheckLoan();
+  runCreditCheck(loan: Loan): void {
     if (!loan) return;
 
+    // Optional: Add a confirm dialog or just run it
+    if (!confirm(`Run automated credit check for Loan #${loan.loanId}?`)) return;
+
     this.processing.set(true);
-    this.officerApi.performCreditCheck(loan.loanId, this.creditScore, this.creditRemarks || 'Credit check completed').subscribe({
+    // Pass null/0 for score to trigger backend automation
+    this.officerApi.performCreditCheck(loan.loanId, 0, 'Automated Credit Check').subscribe({
       next: () => {
         this.processing.set(false);
-        this.creditCheckLoan.set(null);
-        this.showToast('Credit check completed');
+        this.showToast('Credit check completed successfully');
         this.loadDashboardData();
       },
       error: (err) => {
@@ -556,6 +529,9 @@ export class OfficerDashboardComponent implements OnInit {
       }
     });
   }
+
+  // Removing confirmCreditCheck since we merged it above
+  // Removing showCreditCheckModal
 
   showApproveModal(loan: Loan): void {
     this.approvedAmount = loan.amountRequested;
