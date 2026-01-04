@@ -224,8 +224,7 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
         </div>
       </div>
     </div>
-      </div>
-    </div>
+
 
     <!-- Loan Details Modal -->
     <div class="modal-overlay" *ngIf="selectedLoan()" (click)="selectedLoan.set(null)">
