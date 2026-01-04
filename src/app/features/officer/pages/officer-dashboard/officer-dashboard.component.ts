@@ -153,7 +153,9 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
                       </td>
                       <td>
                         <button class="btn btn-sm btn-success me-1"
-                                (click)="showApproveModal(loan)">
+                                (click)="showApproveModal(loan)"
+                                [disabled]="!loan.creditScore"
+                                [title]="!loan.creditScore ? 'Perform credit check first' : 'Approve Loan'">
                           Approve
                         </button>
                         <button class="btn btn-sm btn-danger me-1"

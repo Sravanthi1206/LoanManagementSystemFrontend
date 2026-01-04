@@ -6,10 +6,10 @@ import { AuthApiService } from '../../services/auth-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 
 @Component({
-    selector: 'app-change-password',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
-    template: `
+  selector: 'app-change-password',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
     <div class="login-container">
       <div class="login-card">
         <div class="text-center mb-4">
@@ -80,7 +80,7 @@ import { AuthStateService } from '../../../../core/services/auth-state.service';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .login-container {
       min-height: 100vh;
       display: flex;
@@ -101,85 +101,85 @@ import { AuthStateService } from '../../../../core/services/auth-state.service';
   `]
 })
 export class ChangePasswordComponent {
-    private fb = inject(FormBuilder);
-    private authApi = inject(AuthApiService);
-    private authState = inject(AuthStateService);
-    private router = inject(Router);
+  private fb = inject(FormBuilder);
+  private authApi = inject(AuthApiService);
+  private authState = inject(AuthStateService);
+  private router = inject(Router);
 
-    changePasswordForm: FormGroup;
-    loading = false;
-    errorMessage = '';
+  changePasswordForm: FormGroup;
+  loading = false;
+  errorMessage = '';
 
-    constructor() {
-        this.changePasswordForm = this.fb.group({
-            oldPassword: ['', Validators.required],
-            newPassword: ['', [Validators.required, Validators.minLength(8)]],
-            confirmPassword: ['', Validators.required]
-        }, { validators: this.passwordMatchValidator });
-    }
+  constructor() {
+    this.changePasswordForm = this.fb.group({
+      oldPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required]
+    }, { validators: this.passwordMatchValidator });
+  }
 
-    get oldPassword() { return this.changePasswordForm.get('oldPassword'); }
-    get newPassword() { return this.changePasswordForm.get('newPassword'); }
-    get confirmPassword() { return this.changePasswordForm.get('confirmPassword'); }
+  get oldPassword() { return this.changePasswordForm.get('oldPassword'); }
+  get newPassword() { return this.changePasswordForm.get('newPassword'); }
+  get confirmPassword() { return this.changePasswordForm.get('confirmPassword'); }
 
-    passwordMatchValidator(g: FormGroup) {
-        return g.get('newPassword')?.value === g.get('confirmPassword')?.value
-            ? null : { mismatch: true };
-    }
+  passwordMatchValidator(g: FormGroup) {
+    return g.get('newPassword')?.value === g.get('confirmPassword')?.value
+      ? null : { mismatch: true };
+  }
 
-    onSubmit(): void {
-        if (this.changePasswordForm.valid) {
-            this.loading = true;
-            this.errorMessage = '';
+  onSubmit(): void {
+    if (this.changePasswordForm.valid) {
+      this.loading = true;
+      this.errorMessage = '';
 
-            const user = this.authState.getUser();
-            if (!user) {
-                this.loading = false;
-                this.errorMessage = 'User not authenticated';
-                return;
-            }
+      const user = this.authState.getUser();
+      if (!user) {
+        this.loading = false;
+        this.errorMessage = 'User not authenticated';
+        return;
+      }
 
-            this.authApi.changePassword({
-                oldPassword: this.changePasswordForm.value.oldPassword,
-                newPassword: this.changePasswordForm.value.newPassword
-            }).subscribe({
-                next: () => {
-                    this.loading = false;
-                    // Logout to force re-login or just redirect?
-                    // Since we updated password, maybe token is still valid but password hash changed.
-                    // Ideally we redirect to dashboard.
-                    // But we should update user state locally to remove passwordChangeRequired!
-                    // Or just trust the backend doesn't enforce it anymore on subsequent requests (it doesn't checks token).
-                    // Update local user state
-                    const updatedUser = { ...user, passwordChangeRequired: false };
-                    const token = this.authState.getToken();
-                    if (token) {
-                        this.authState.setAuth(token, updatedUser);
-                    }
+      this.authApi.changePassword(user.id, {
+        oldPassword: this.changePasswordForm.value.oldPassword,
+        newPassword: this.changePasswordForm.value.newPassword
+      }).subscribe({
+        next: () => {
+          this.loading = false;
+          // Logout to force re-login or just redirect?
+          // Since we updated password, maybe token is still valid but password hash changed.
+          // Ideally we redirect to dashboard.
+          // But we should update user state locally to remove passwordChangeRequired!
+          // Or just trust the backend doesn't enforce it anymore on subsequent requests (it doesn't checks token).
+          // Update local user state
+          const updatedUser = { ...user, passwordChangeRequired: false };
+          const token = this.authState.getToken();
+          if (token) {
+            this.authState.setAuth(token, updatedUser);
+          }
 
-                    this.redirectToDashboard(user.role);
-                },
-                error: (error) => {
-                    this.loading = false;
-                    this.errorMessage = error.error?.message || 'Failed to change password';
-                }
-            });
+          this.redirectToDashboard(user.role);
+        },
+        error: (error) => {
+          this.loading = false;
+          this.errorMessage = error.error?.message || 'Failed to change password';
         }
+      });
     }
+  }
 
-    private redirectToDashboard(role: string): void {
-        switch (role) {
-            case 'CUSTOMER':
-                this.router.navigate(['/customer/dashboard']);
-                break;
-            case 'LOAN_OFFICER':
-                this.router.navigate(['/officer/dashboard']);
-                break;
-            case 'ADMIN':
-                this.router.navigate(['/admin/dashboard']);
-                break;
-            default:
-                this.router.navigate(['/auth/login']);
-        }
+  private redirectToDashboard(role: string): void {
+    switch (role) {
+      case 'CUSTOMER':
+        this.router.navigate(['/customer/dashboard']);
+        break;
+      case 'LOAN_OFFICER':
+        this.router.navigate(['/officer/dashboard']);
+        break;
+      case 'ADMIN':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      default:
+        this.router.navigate(['/auth/login']);
     }
+  }
 }

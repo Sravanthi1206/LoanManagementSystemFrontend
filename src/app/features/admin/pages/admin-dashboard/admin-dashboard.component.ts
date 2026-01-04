@@ -52,7 +52,7 @@ import { User, DashboardStats } from '../../../../shared/types/models';
         <div class="col-md-3">
           <div class="card stat-card bg-warning text-white">
             <div class="card-body">
-              <h3>{{ users().length }}</h3>
+              <h3>{{ totalElements() }}</h3>
               <p class="mb-0">Total Users</p>
             </div>
           </div>
@@ -158,6 +158,26 @@ import { User, DashboardStats } from '../../../../shared/types/models';
                   </tbody>
                 </table>
               </div>
+
+              <!-- Pagination Controls -->
+              <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalPages() > 1">
+                <div class="text-muted small">
+                  Showing {{ (currentPage() * pageSize()) + 1 }} to {{ Math.min((currentPage() + 1) * pageSize(), totalElements()) }} of {{ totalElements() }} users
+                </div>
+                <nav>
+                  <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" [class.disabled]="currentPage() === 0">
+                      <button class="page-link" (click)="onPageChange(currentPage() - 1)">Previous</button>
+                    </li>
+                    <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage()">
+                      <button class="page-link" (click)="onPageChange(page)">{{ page + 1 }}</button>
+                    </li>
+                    <li class="page-item" [class.disabled]="currentPage() === totalPages() - 1">
+                      <button class="page-link" (click)="onPageChange(currentPage() + 1)">Next</button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
             </div>
           </div>
         </div>
@@ -236,6 +256,10 @@ import { User, DashboardStats } from '../../../../shared/types/models';
               <input type="email" class="form-control" [(ngModel)]="staffForm.email" placeholder="Enter email">
             </div>
             <div class="mb-3">
+              <label class="form-label">Phone <span class="text-danger">*</span></label>
+              <input type="tel" class="form-control" [(ngModel)]="staffForm.phone" placeholder="Enter 10-digit phone number" maxlength="10">
+            </div>
+            <div class="mb-3">
               <label class="form-label">Password <span class="text-danger">*</span></label>
               <input type="password" class="form-control" [(ngModel)]="staffForm.password" placeholder="Enter password">
             </div>
@@ -298,6 +322,9 @@ import { User, DashboardStats } from '../../../../shared/types/models';
       background: white;
       border-radius: 12px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
     }
     .modal-header {
       padding: 1.25rem 1.5rem;
@@ -308,6 +335,7 @@ import { User, DashboardStats } from '../../../../shared/types/models';
     }
     .modal-body {
       padding: 1.5rem;
+      overflow-y: auto;
     }
     .modal-footer {
       padding: 1rem 1.5rem;
@@ -341,6 +369,7 @@ import { User, DashboardStats } from '../../../../shared/types/models';
   `]
 })
 export class AdminDashboardComponent implements OnInit {
+  protected Math = Math; // Make Math available to template
   private adminApi = inject(AdminApiService);
   private authState = inject(AuthStateService);
 
@@ -350,6 +379,13 @@ export class AdminDashboardComponent implements OnInit {
   stats = signal<DashboardStats | null>(null);
   loansByType = signal<{ [key: string]: number } | null>(null);
   users = signal<User[]>([]);
+
+  // Pagination
+  currentPage = signal(0);
+  pageSize = signal(10);
+  totalPages = signal(0);
+  totalElements = signal(0);
+
   loading = signal(true);
   processing = signal(false);
 
@@ -363,6 +399,7 @@ export class AdminDashboardComponent implements OnInit {
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     password: '',
     role: ''
   };
@@ -394,14 +431,40 @@ export class AdminDashboardComponent implements OnInit {
       error: () => { }
     });
 
-    this.adminApi.getAllUsers().subscribe({
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.adminApi.getAllUsers(this.currentPage(), this.pageSize()).subscribe({
       next: (response) => {
         this.users.set(response.content);
+        this.totalPages.set(response.totalPages);
+        this.totalElements.set(response.totalElements);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
   }
+
+  onPageChange(page: number): void {
+    if (page >= 0 && page < this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadUsers();
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const delta = 2;
+    const range: number[] = [];
+
+    for (let i = Math.max(0, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+      range.push(i);
+    }
+    return range;
+  }
+
 
   refreshData(): void {
     this.loadDashboardData();
@@ -440,22 +503,8 @@ export class AdminDashboardComponent implements OnInit {
   canDeactivate(user: User): boolean {
     const currentId = this.currentUserId();
 
-    // Cannot deactivate self
-    if (user.id === currentId) {
-      return false;
-    }
-
-    // Cannot deactivate the last active admin
-    if (user.role === 'ADMIN') {
-      const activeAdmins = this.users().filter(u =>
-        u.role === 'ADMIN' && u.active
-      );
-      if (activeAdmins.length <= 1) {
-        return false;
-      }
-    }
-
-    return true;
+    // Only prevent deactivating self
+    return user.id !== currentId;
   }
 
   showDeactivateConfirm(user: User): void {
@@ -497,13 +546,14 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   showCreateStaffModal(): void {
-    this.staffForm = { firstName: '', lastName: '', email: '', password: '', role: '' };
+    this.staffForm = { firstName: '', lastName: '', email: '', phone: '', password: '', role: '' };
     this.showStaffModal.set(true);
   }
 
   isStaffFormValid(): boolean {
+    const phoneValid = /^\d{10}$/.test(this.staffForm.phone);
     return !!(this.staffForm.firstName && this.staffForm.lastName &&
-      this.staffForm.email && this.staffForm.password && this.staffForm.role);
+      this.staffForm.email && phoneValid && this.staffForm.password && this.staffForm.role);
   }
 
   confirmCreateStaff(): void {

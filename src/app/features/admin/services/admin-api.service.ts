@@ -21,10 +21,11 @@ export class AdminApiService {
   }
 
   // User Management APIs
-  getAllUsers(page: number = 0, size: number = 10): Observable<PageResponse<User>> {
+  getAllUsers(page: number = 0, size: number = 100): Observable<PageResponse<User>> {
     const params = new HttpParams()
       .set('page', page.toString())
-      .set('size', size.toString());
+      .set('size', size.toString())
+      .set('sort', 'id,desc');
     return this.http.get<PageResponse<User>>(`${this.apiUrl}/users`, { params });
   }
 

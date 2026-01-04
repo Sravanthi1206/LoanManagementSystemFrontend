@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { LoginRequest, RegisterRequest, LoginResponse } from '../../../shared/types/models';
@@ -39,8 +39,9 @@ export class AuthApiService {
     );
   }
 
-  changePassword(data: any): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/change-password`, data);
+  changePassword(userId: number, data: any): Observable<void> {
+    const headers = new HttpHeaders().set('X-User-Id', userId.toString());
+    return this.http.post<void>(`${this.apiUrl}/change-password`, data, { headers });
   }
 
   logout(): void {
