@@ -59,15 +59,20 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             errorMessage = friendlyMessage || 'Please check your input and try again.';
             break;
           case 401:
-            const token = authState.getToken();
-            if (!token) {
-              authState.clearAuth();
-              router.navigate(['/auth/login']);
-              errorMessage = 'Please log in to continue.';
+            // Don't treat login failures as session expiration
+            if (req.url.includes('/login')) {
+              errorMessage = error.error?.message || 'Invalid email or password';
             } else {
-              errorMessage = 'Your session has expired. Please log in again.';
-              authState.clearAuth();
-              router.navigate(['/auth/login']);
+              const token = authState.getToken();
+              if (!token) {
+                authState.clearAuth();
+                router.navigate(['/auth/login']);
+                errorMessage = 'Please log in to continue.';
+              } else {
+                errorMessage = 'Your session has expired. Please log in again.';
+                authState.clearAuth();
+                router.navigate(['/auth/login']);
+              }
             }
             break;
           case 403:
