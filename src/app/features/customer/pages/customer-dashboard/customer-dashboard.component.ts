@@ -507,7 +507,8 @@ export class CustomerDashboardComponent implements OnInit {
       loanId: emi.loanId,
       userId: user.id,
       amount: emi.totalEmi,
-      installmentId: emi.id
+      installmentId: emi.id,
+      paymentMethod: 'WALLET'
     }).subscribe({
       next: () => {
         this.paying.set(false);
