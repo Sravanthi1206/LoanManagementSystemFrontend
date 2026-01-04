@@ -19,6 +19,12 @@ export class AuthApiService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
         this.authState.setAuth(response.accessToken, response.user);
+
+        if (response.user.passwordChangeRequired) {
+          this.router.navigate(['/auth/change-password']);
+          return;
+        }
+
         this.redirectToDashboard(response.user.role);
       })
     );
@@ -31,6 +37,10 @@ export class AuthApiService {
         this.router.navigate(['/customer/dashboard']);
       })
     );
+  }
+
+  changePassword(data: any): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/change-password`, data);
   }
 
   logout(): void {
