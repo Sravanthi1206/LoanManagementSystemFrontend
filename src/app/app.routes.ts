@@ -43,6 +43,11 @@ export const routes: Routes = [
                     .then(m => m.CustomerDashboardComponent)
             },
             {
+                path: 'profile',
+                loadComponent: () => import('./features/customer/pages/profile/profile.component')
+                    .then(m => m.ProfileComponent)
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full'
