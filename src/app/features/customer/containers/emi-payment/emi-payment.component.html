@@ -1,1 +1,55 @@
-<p>emi-payment works!</p>
+<div class="modal-overlay" *ngIf="isOpen()" (click)="close()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pay EMI</h5>
+                <button type="button" class="btn-close" (click)="close()"></button>
+            </div>
+            <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
+                <div class="modal-body">
+                    <div *ngIf="emi()" class="mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>EMI Details</h6>
+                                <p class="mb-1"><strong>Loan ID:</strong> #{{ emi()!.loanId }}</p>
+                                <p class="mb-1"><strong>Installment:</strong> {{ emi()!.installmentNo }}</p>
+                                <p class="mb-1"><strong>Due Date:</strong> {{ emi()!.dueDate | date }}</p>
+                                <p class="mb-0"><strong>Amount:</strong> ₹{{ emi()!.totalEmi | number }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-control" formControlName="paymentMethod">
+                            <option value="WALLET">Wallet</option>
+                            <option value="UPI">UPI</option>
+                            <option value="CARD">Debit/Credit Card</option>
+                            <option value="NET_BANKING">Net Banking</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" *ngIf="paymentForm.get('paymentMethod')?.value === 'UPI'">
+                        <label class="form-label">UPI ID</label>
+                        <input type="text" class="form-control" formControlName="upiId" placeholder="yourname@upi">
+                    </div>
+
+                    <div *ngIf="errorMessage()" class="alert alert-danger">
+                        {{ errorMessage() }}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="close()">Cancel</button>
+                    <button type="submit" class="btn btn-success" [disabled]="paymentForm.invalid || loading()">
+                        <span *ngIf="!loading()">Pay ₹{{ emi()?.totalEmi | number }}</span>
+                        <span *ngIf="loading()">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Processing...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

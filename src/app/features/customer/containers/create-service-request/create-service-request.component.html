@@ -1,1 +1,143 @@
-<p>create-service-request works!</p>
+<div class="modal-overlay" *ngIf="isOpen()" (click)="close()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Apply for Loan</h5>
+                <button type="button" class="btn-close" (click)="close()">&times;</button>
+            </div>
+
+            <!-- Success State -->
+            <div *ngIf="successMessage()" class="modal-body text-center py-5">
+                <div class="success-icon mb-3">✓</div>
+                <h4 class="text-success mb-3">Application Submitted!</h4>
+                <p class="text-muted mb-4">{{ successMessage() }}</p>
+                <button type="button" class="btn btn-primary" (click)="close()">Done</button>
+            </div>
+
+            <!-- Form State -->
+            <form *ngIf="!successMessage()" [formGroup]="loanForm" (ngSubmit)="onSubmit()" class="modal-form">
+                <div class="modal-body">
+                    <!-- Loan Type -->
+                    <div class="mb-3">
+                        <label class="form-label">Loan Type <span class="text-danger">*</span></label>
+                        <select class="form-control" formControlName="type" [class.is-invalid]="isFieldInvalid('type')">
+                            <option value="">Select loan type</option>
+                            <option value="HOME">Home Loan</option>
+                            <option value="PERSONAL">Personal Loan</option>
+                            <option value="VEHICLE">Vehicle Loan</option>
+                            <option value="EDUCATION">Education Loan</option>
+                            <option value="BUSINESS">Business Loan</option>
+                        </select>
+                        <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
+                            Please select a loan type
+                        </div>
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="mb-3">
+                        <label class="form-label">Loan Amount (₹) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" formControlName="amount" placeholder="Minimum ₹10,000"
+                            [class.is-invalid]="isFieldInvalid('amount')">
+                        <div class="invalid-feedback" *ngIf="isFieldInvalid('amount')">
+                            <span *ngIf="loanForm.get('amount')?.errors?.['required']">Please enter the loan
+                                amount</span>
+                            <span *ngIf="loanForm.get('amount')?.errors?.['min']">Minimum loan amount is ₹10,000</span>
+                        </div>
+                    </div>
+
+                    <!-- Tenure -->
+                    <div class="mb-3">
+                        <label class="form-label">Tenure (Months) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" formControlName="tenure" placeholder="6 to 360 months"
+                            [class.is-invalid]="isFieldInvalid('tenure')">
+                        <div class="invalid-feedback" *ngIf="isFieldInvalid('tenure')">
+                            <span *ngIf="loanForm.get('tenure')?.errors?.['required']">Please enter the loan
+                                tenure</span>
+                            <span *ngIf="loanForm.get('tenure')?.errors?.['min']">Minimum tenure is 6 months</span>
+                            <span *ngIf="loanForm.get('tenure')?.errors?.['max']">Maximum tenure is 360 months</span>
+                        </div>
+                    </div>
+
+                    <!-- Purpose -->
+                    <div class="mb-3">
+                        <label class="form-label">Purpose <span class="text-danger">*</span></label>
+                        <textarea class="form-control" formControlName="purpose" rows="2"
+                            placeholder="Briefly describe why you need this loan"
+                            [class.is-invalid]="isFieldInvalid('purpose')"></textarea>
+                        <div class="invalid-feedback" *ngIf="isFieldInvalid('purpose')">
+                            <span *ngIf="loanForm.get('purpose')?.errors?.['required']">Please describe the loan
+                                purpose</span>
+                            <span *ngIf="loanForm.get('purpose')?.errors?.['minlength']">Please provide at least 10
+                                characters</span>
+                        </div>
+                    </div>
+
+                    <!-- Employment Type -->
+                    <div class="mb-3">
+                        <label class="form-label">Employment Type <span class="text-danger">*</span></label>
+                        <select class="form-control" formControlName="employmentType"
+                            [class.is-invalid]="isFieldInvalid('employmentType')">
+                            <option value="">Select employment type</option>
+                            <option value="SALARIED">Salaried</option>
+                            <option value="SELF_EMPLOYED">Self Employed</option>
+                            <option value="BUSINESS">Business Owner</option>
+                        </select>
+                        <div class="invalid-feedback" *ngIf="isFieldInvalid('employmentType')">
+                            Please select your employment type
+                        </div>
+                    </div>
+
+                    <!-- Monthly Income -->
+                    <div class="mb-3">
+                        <label class="form-label">Monthly Income (₹) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" formControlName="monthlyIncome"
+                            placeholder="Minimum ₹10,000" [class.is-invalid]="isFieldInvalid('monthlyIncome')">
+                        <div class="invalid-feedback" *ngIf="isFieldInvalid('monthlyIncome')">
+                            <span *ngIf="loanForm.get('monthlyIncome')?.errors?.['required']">Please enter your monthly
+                                income</span>
+                            <span *ngIf="loanForm.get('monthlyIncome')?.errors?.['min']">Monthly income must be at least
+                                ₹10,000</span>
+                        </div>
+                    </div>
+
+                    <!-- Existing Loans -->
+                    <div class="mb-3">
+                        <label class="form-label">Do you have any existing loans?</label>
+                        <select class="form-control" formControlName="existingLoans">
+                            <option [ngValue]="false">No</option>
+                            <option [ngValue]="true">Yes</option>
+                        </select>
+                    </div>
+
+                    <!-- EMI Calculator Result -->
+                    <div *ngIf="calculatedEmi()" class="alert alert-info">
+                        <strong>Estimated Monthly EMI:</strong> ₹{{ calculatedEmi() | number:'1.0-0' }}
+                        <button type="button" class="btn btn-sm btn-link p-0 ms-2" (click)="calculateEmi()">
+                            Recalculate
+                        </button>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div *ngIf="errorMessage()" class="alert alert-danger">
+                        {{ errorMessage() }}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="close()">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary me-2" (click)="calculateEmi()"
+                        [disabled]="!canCalculateEmi()">
+                        Calculate EMI
+                    </button>
+                    <button type="submit" class="btn btn-primary" [disabled]="loading()">
+                        <span *ngIf="!loading()">Submit Application</span>
+                        <span *ngIf="loading()">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Submitting...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

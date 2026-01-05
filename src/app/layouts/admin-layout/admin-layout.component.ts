@@ -2,17 +2,21 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal.component';
+import { NotificationDropdownComponent } from '../../shared/components/notification-dropdown/notification-dropdown.component';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, ConfirmationModalComponent],
+  imports: [RouterOutlet, CommonModule, ConfirmationModalComponent, NotificationDropdownComponent],
   template: `
     <div class="layout-wrapper">
       <nav class="navbar navbar-admin">
         <div class="container-fluid d-flex justify-content-between align-items-center">
           <a class="navbar-brand" href="#">LMS • Administrator</a>
-          <button class="btn btn-outline-light btn-sm" (click)="initiateLogout()">Logout</button>
+          <div class="d-flex align-items-center gap-3">
+            <app-notification-dropdown></app-notification-dropdown>
+            <button class="btn btn-outline-light btn-sm" (click)="initiateLogout()">Logout</button>
+          </div>
         </div>
       </nav>
       <div class="container-fluid mt-4">
@@ -57,3 +61,4 @@ export class AdminLayoutComponent {
     this.showLogoutModal = false;
   }
 }
+

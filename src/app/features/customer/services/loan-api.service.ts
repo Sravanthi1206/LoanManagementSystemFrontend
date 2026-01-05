@@ -93,4 +93,26 @@ export class LoanApiService {
   getDocuments(applicationId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/loans/${applicationId}/documents`);
   }
+
+  // Notification APIs
+  getNotifications(userId: number): Observable<PageResponse<any>> {
+    return this.http.get<PageResponse<any>>(`${this.apiUrl}/notifications/user/${userId}`);
+  }
+
+  getUnreadNotifications(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/notifications/user/${userId}/unread`);
+  }
+
+  markNotificationAsRead(id: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/notifications/${id}/read`, {});
+  }
+
+  // Profile APIs
+  getUserProfile(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/users/profile`);
+  }
+
+  updateUserProfile(userId: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/users/${userId}`, data);
+  }
 }

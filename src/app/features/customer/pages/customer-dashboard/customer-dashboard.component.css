@@ -1,0 +1,11 @@
+/* Customer Dashboard - Minimal Component-Specific Styles */
+/* Most styles inherited from global styles.css */
+
+.table-dark th {
+    background: #000;
+    color: #fff;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}

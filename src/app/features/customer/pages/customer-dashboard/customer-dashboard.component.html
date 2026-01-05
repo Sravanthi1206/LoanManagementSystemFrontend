@@ -1,1 +1,422 @@
-<p>customer-dashboard works!</p>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Welcome, {{ userName() }}!</h2>
+            <p class="text-muted">Manage your loans and payments</p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div *ngIf="toastMessage()" class="toast-notification" [class.toast-success]="toastType() === 'success'"
+        [class.toast-error]="toastType() === 'error'">
+        {{ toastMessage() }}
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ myLoans().length }}</h3>
+                    <p class="mb-0">Total Loans</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ activeLoansCount() }}</h3>
+                    <p class="mb-0">Active Loans</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ upcomingEmis().length }}</h3>
+                    <p class="mb-0">Upcoming EMIs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card" style="cursor: pointer;" (click)="openWalletModal()">
+                <div class="card-body">
+                    <h3>₹{{ walletBalance()?.balance || 0 | number }}</h3>
+                    <p class="mb-0">Wallet Balance</p>
+                    <small class="text-muted">Click to view transactions</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Loans -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">My Loans</h5>
+                    <button class="btn btn-primary btn-sm" (click)="showApplyLoanModal()">
+                        Apply for New Loan
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="loading()" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">Loading loans...</p>
+                    </div>
+
+                    <div *ngIf="!loading() && myLoans().length === 0" class="text-center py-4">
+                        <p class="text-muted">No loans found. Apply for your first loan!</p>
+                    </div>
+
+                    <div *ngIf="!loading() && myLoans().length > 0" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Applied On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let loan of myLoans()">
+                                    <td>#{{ loan.loanId }}</td>
+                                    <td>{{ loanUtils.getLoanTypeDisplay(loan.type) }}</td>
+                                    <td>₹{{ loan.amountRequested | number }}</td>
+                                    <td>
+                                        <span [class]="'badge ' + loanUtils.getStatusBadgeClass(loan.status)">
+                                            {{ loanUtils.getStatusDisplay(loan.status) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ loan.appliedOn | date: 'shortDate' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-2"
+                                            (click)="viewLoanDetails(loan)">
+                                            View
+                                        </button>
+                                        <button *ngIf="loan.status === 'DISBURSED'"
+                                            class="btn btn-sm btn-outline-success me-2" (click)="viewEmiSchedule(loan)">
+                                            EMI Schedule
+                                        </button>
+                                        <button *ngIf="loan.status === 'APPLIED'" class="btn btn-sm btn-outline-danger"
+                                            (click)="showWithdrawConfirm(loan)">
+                                            Withdraw
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming EMIs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Upcoming EMI Payments</h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="upcomingEmis().length === 0" class="text-center py-4">
+                        <p class="text-muted">No upcoming EMI payments</p>
+                    </div>
+
+                    <div *ngIf="upcomingEmis().length > 0" class="table-responsive scrollable-table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Installment #</th>
+                                    <th>Due Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let emi of upcomingEmis()">
+                                    <td>#{{ emi.loanId }}</td>
+                                    <td>{{ emi.installmentNo }}</td>
+                                    <td>{{ emi.dueDate | date: 'mediumDate' }}</td>
+                                    <td>₹{{ emi.totalEmi | number }}</td>
+                                    <td>
+                                        <span [class]="'badge ' + loanUtils.getStatusBadgeClass(emi.status)">
+                                            {{ emi.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button *ngIf="emi.status === 'PENDING'" class="btn btn-sm btn-success"
+                                            (click)="showPayEmiConfirm(emi)">
+                                            Pay Now
+                                        </button>
+                                    </td>
+                                </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Payment History</h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="paymentHistory().length === 0" class="text-center py-4">
+                        <p class="text-muted">No payment history available</p>
+                    </div>
+
+                    <div *ngIf="paymentHistory().length > 0" class="table-responsive scrollable-table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Loan ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let payment of paymentHistory()">
+                                    <td><code>{{ payment.transactionId }}</code></td>
+                                    <td>#{{ payment.loanId }}</td>
+                                    <td>
+                                        <span
+                                            [class]="payment.paymentType === 'REPAYMENT' ? 'badge bg-success' : 'badge bg-info'">
+                                            {{ payment.paymentType }}
+                                        </span>
+                                    </td>
+                                    <td>₹{{ payment.amount | number }}</td>
+                                    <td>{{ payment.paymentDate | date: 'mediumDate' }}</td>
+                                    <td>
+                                        <span
+                                            [class]="payment.status === 'SUCCESS' ? 'badge bg-success' : 'badge bg-warning'">
+                                            {{ payment.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Details Modal -->
+<div class="modal-overlay" *ngIf="selectedLoan()" (click)="selectedLoan.set(null)">
+    <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Loan Details #{{ selectedLoan()?.loanId }}</h5>
+                <button type="button" class="btn-close" (click)="selectedLoan.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Type:</strong> {{ loanUtils.getLoanTypeDisplay(selectedLoan()?.type || '') }}</p>
+                        <p><strong>Amount Requested:</strong> ₹{{ selectedLoan()?.amountRequested | number }}</p>
+                        <p><strong>Tenure:</strong> {{ selectedLoan()?.tenureMonths }} months</p>
+                        <p><strong>Purpose:</strong> {{ selectedLoan()?.purpose }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong>
+                            <span [class]="'badge ' + loanUtils.getStatusBadgeClass(selectedLoan()?.status || '')">
+                                {{ loanUtils.getStatusDisplay(selectedLoan()?.status || '') }}
+                            </span>
+                        </p>
+                        <p><strong>Applied On:</strong> {{ selectedLoan()?.appliedOn | date: 'medium' }}</p>
+                        <p *ngIf="selectedLoan()?.amountApproved"><strong>Amount Approved:</strong> ₹{{
+                            selectedLoan()?.amountApproved | number }}</p>
+                        <p *ngIf="selectedLoan()?.interestRate"><strong>Interest Rate:</strong> {{
+                            selectedLoan()?.interestRate }}%</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="selectedLoan.set(null)">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- EMI Schedule Modal -->
+<div class="modal-overlay" *ngIf="showScheduleModal()" (click)="showScheduleModal.set(false)">
+    <div class="modal-dialog modal-xl" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">EMI Schedule - Loan #{{ scheduleLoanId() }}</h5>
+                <button type="button" class="btn-close" (click)="showScheduleModal.set(false)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div *ngIf="loadingSchedule()" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Loading schedule...</p>
+                </div>
+
+                <div *ngIf="!loadingSchedule() && emiSchedule().length === 0" class="text-center py-4">
+                    <p class="text-muted">No EMI schedule found</p>
+                </div>
+
+                <div *ngIf="!loadingSchedule() && emiSchedule().length > 0" class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Due Date</th>
+                                <th>Principal</th>
+                                <th>Interest</th>
+                                <th>Total EMI</th>
+                                <th>Status</th>
+                                <th>Paid Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let emi of emiSchedule()">
+                                <td>{{ emi.installmentNo }}</td>
+                                <td>{{ emi.dueDate | date: 'mediumDate' }}</td>
+                                <td>₹{{ emi.principalAmount | number:'1.2-2' }}</td>
+                                <td>₹{{ emi.interestAmount | number:'1.2-2' }}</td>
+                                <td><strong>₹{{ emi.totalEmi | number:'1.2-2' }}</strong></td>
+                                <td>
+                                    <span [class]="'badge ' + loanUtils.getStatusBadgeClass(emi.status)">
+                                        {{ emi.status }}
+                                    </span>
+                                </td>
+                                <td>{{ emi.paidDate ? (emi.paidDate | date: 'shortDate') : '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="showScheduleModal.set(false)">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Withdraw Confirmation Modal -->
+<div class="modal-overlay" *ngIf="loanToWithdraw()" (click)="loanToWithdraw.set(null)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Withdraw Application</h5>
+                <button type="button" class="btn-close" (click)="loanToWithdraw.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to withdraw loan application <strong>#{{ loanToWithdraw()?.loanId }}</strong>?
+                </p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="loanToWithdraw.set(null)">Cancel</button>
+                <button type="button" class="btn btn-danger" (click)="confirmWithdraw()" [disabled]="withdrawing()">
+                    <span *ngIf="!withdrawing()">Withdraw</span>
+                    <span *ngIf="withdrawing()"><span
+                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pay EMI Confirmation Modal -->
+<div class="modal-overlay" *ngIf="emiToPay()" (click)="emiToPay.set(null)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pay EMI</h5>
+                <button type="button" class="btn-close" (click)="emiToPay.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Confirm payment for:</p>
+                <div class="bg-light p-3 rounded">
+                    <p class="mb-1"><strong>Loan ID:</strong> #{{ emiToPay()?.loanId }}</p>
+                    <p class="mb-1"><strong>Installment:</strong> {{ emiToPay()?.installmentNo }}</p>
+                    <p class="mb-1"><strong>Due Date:</strong> {{ emiToPay()?.dueDate | date: 'mediumDate' }}</p>
+                    <p class="mb-0"><strong>Amount:</strong> ₹{{ emiToPay()?.totalEmi | number }}</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="emiToPay.set(null)">Cancel</button>
+                <button type="button" class="btn btn-success" (click)="confirmPayEmi()" [disabled]="paying()">
+                    <span *ngIf="!paying()">Pay ₹{{ emiToPay()?.totalEmi | number }}</span>
+                    <span *ngIf="paying()"><span
+                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wallet Transactions Modal -->
+<div class="modal-overlay" *ngIf="showWalletModal()" (click)="showWalletModal.set(false)">
+    <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Wallet Transactions</h5>
+                <button type="button" class="btn-close" (click)="showWalletModal.set(false)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div *ngIf="loadingWalletTxns()" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Loading transactions...</p>
+                </div>
+
+                <div *ngIf="!loadingWalletTxns() && walletTransactions().length === 0" class="text-center py-4">
+                    <p class="text-muted">No wallet transactions found</p>
+                </div>
+
+                <div *ngIf="!loadingWalletTxns() && walletTransactions().length > 0" class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let txn of walletTransactions()">
+                                <td>{{ txn.createdAt | date: 'medium' }}</td>
+                                <td>
+                                    <span
+                                        [class]="txn.type === 'CREDIT' || txn.type === 'LOAN_DISBURSEMENT' ? 'badge bg-success' : 'badge bg-danger'">
+                                        {{ txn.type }}
+                                    </span>
+                                </td>
+                                <td
+                                    [class]="txn.type === 'CREDIT' || txn.type === 'LOAN_DISBURSEMENT' ? 'text-success' : 'text-danger'">
+                                    {{ txn.type === 'CREDIT' || txn.type === 'LOAN_DISBURSEMENT' ? '+' : '-' }}₹{{
+                                    txn.amount | number }}
+                                </td>
+                                <td>{{ txn.description || '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="showWalletModal.set(false)">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Application Form -->
+<app-create-service-request #loanForm></app-create-service-request>
