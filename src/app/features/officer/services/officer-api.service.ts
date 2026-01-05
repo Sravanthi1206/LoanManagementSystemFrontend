@@ -77,4 +77,18 @@ export class OfficerApiService {
   disburseLoan(loanId: number): Observable<Loan> {
     return this.http.put<Loan>(`${this.apiUrl}/loans/admin/${loanId}/disburse`, {});
   }
+
+  getRejectedLoans(page: number = 0, size: number = 10): Observable<PageResponse<Loan>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/admin/by-status/REJECTED`, { params });
+  }
+
+  getDisbursedLoans(page: number = 0, size: number = 10): Observable<PageResponse<Loan>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/admin/by-status/DISBURSED`, { params });
+  }
 }

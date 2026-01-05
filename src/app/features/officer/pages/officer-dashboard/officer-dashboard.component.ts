@@ -229,6 +229,58 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
           </div>
         </div>
       </div>
+
+      <!-- Loan History -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Loan History (Processed Applications)</h5>
+            </div>
+            <div class="card-body">
+              <div *ngIf="loanHistory().length === 0" class="text-center py-4">
+                <p class="text-muted">No loan history available</p>
+              </div>
+
+              <div *ngIf="loanHistory().length > 0" class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Loan ID</th>
+                      <th>Customer ID</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let loan of loanHistory()">
+                      <td>#{{ loan.loanId }}</td>
+                      <td>{{ loan.userId }}</td>
+                      <td>{{ getLoanTypeDisplay(loan.type) }}</td>
+                      <td>₹{{ loan.amountRequested | number }}</td>
+                      <td>
+                        <span [class]="'badge ' + getStatusBadge(loan.status)">
+                          {{ loan.status }}
+                        </span>
+                      </td>
+                      <td>{{ loan.appliedOn | date: 'shortDate' }}</td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-info"
+                                (click)="viewDetails(loan)">
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
 
@@ -467,6 +519,7 @@ export class OfficerDashboardComponent implements OnInit {
   pendingLoans = signal<Loan[]>([]);
   underReviewLoans = signal<Loan[]>([]);
   approvedLoans = signal<Loan[]>([]);
+  loanHistory = signal<Loan[]>([]);
   loading = signal(true);
   processing = signal(false);
 
@@ -501,6 +554,7 @@ export class OfficerDashboardComponent implements OnInit {
 
   loadDashboardData(): void {
     this.loading.set(true);
+    this.loanHistory.set([]); // Reset loan history to avoid duplicates
 
     this.officerApi.getDashboardStats().subscribe({
       next: (stats) => this.stats.set(stats),
@@ -524,6 +578,23 @@ export class OfficerDashboardComponent implements OnInit {
       next: (response) => this.approvedLoans.set(response.content),
       error: () => { }
     });
+
+    // Load loan history (rejected + disbursed)
+    this.officerApi.getRejectedLoans(0, 20).subscribe({
+      next: (response) => {
+        const currentHistory = this.loanHistory();
+        this.loanHistory.set([...currentHistory, ...response.content]);
+      },
+      error: () => { }
+    });
+
+    this.officerApi.getDisbursedLoans(0, 20).subscribe({
+      next: (response) => {
+        const currentHistory = this.loanHistory();
+        this.loanHistory.set([...currentHistory, ...response.content]);
+      },
+      error: () => { }
+    });
   }
 
   getLoanTypeDisplay(type: string): string {
@@ -541,6 +612,16 @@ export class OfficerDashboardComponent implements OnInit {
     if (score >= 750) return 'bg-success';
     if (score >= 650) return 'bg-warning';
     return 'bg-danger';
+  }
+
+  getStatusBadge(status: string): string {
+    const badges: { [key: string]: string } = {
+      'REJECTED': 'bg-danger',
+      'DISBURSED': 'bg-success',
+      'CLOSED': 'bg-secondary',
+      'WITHDRAWN': 'bg-warning'
+    };
+    return badges[status] || 'bg-secondary';
   }
 
   viewDetails(loan: Loan): void {
