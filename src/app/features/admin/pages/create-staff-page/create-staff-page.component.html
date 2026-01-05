@@ -1,0 +1,110 @@
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Create Staff Account</h4>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="goBack()">
+                        ← Back to Dashboard
+                    </button>
+                </div>
+
+                <!-- Success State -->
+                <div *ngIf="successMessage()" class="card-body text-center py-5">
+                    <div class="success-icon mb-3" style="font-size: 3rem; color: #28a745;">✓</div>
+                    <h4 class="text-success mb-3">Account Created!</h4>
+                    <p class="text-muted mb-4">{{ successMessage() }}</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-primary" (click)="goBack()">Back to Dashboard</button>
+                        <button type="button" class="btn btn-outline-primary"
+                            (click)="successMessage.set(''); createStaffForm.reset()">Create Another</button>
+                    </div>
+                </div>
+
+                <!-- Form State -->
+                <form *ngIf="!successMessage()" [formGroup]="createStaffForm" (ngSubmit)="onSubmit()">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" formControlName="firstName"
+                                    placeholder="Enter first name" [class.is-invalid]="isFieldInvalid('firstName')">
+                                <div class="invalid-feedback">First name is required</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" formControlName="lastName"
+                                    placeholder="Enter last name" [class.is-invalid]="isFieldInvalid('lastName')">
+                                <div class="invalid-feedback">Last name is required</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" formControlName="email" placeholder="Enter email"
+                                [class.is-invalid]="isFieldInvalid('email')">
+                            <div class="invalid-feedback">
+                                <span *ngIf="createStaffForm.get('email')?.errors?.['required']">Email is
+                                    required</span>
+                                <span *ngIf="createStaffForm.get('email')?.errors?.['email']">Invalid email
+                                    format</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" formControlName="phone"
+                                placeholder="Enter 10-digit phone number" maxlength="10"
+                                [class.is-invalid]="isFieldInvalid('phone')">
+                            <div class="invalid-feedback">
+                                <span *ngIf="createStaffForm.get('phone')?.errors?.['required']">Phone is
+                                    required</span>
+                                <span *ngIf="createStaffForm.get('phone')?.errors?.['pattern']">Must be 10 digits</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" formControlName="password"
+                                placeholder="Enter password (min 6 characters)"
+                                [class.is-invalid]="isFieldInvalid('password')">
+                            <div class="invalid-feedback">
+                                <span *ngIf="createStaffForm.get('password')?.errors?.['required']">Password is
+                                    required</span>
+                                <span *ngIf="createStaffForm.get('password')?.errors?.['minlength']">Min 6
+                                    characters</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Role <span class="text-danger">*</span></label>
+                            <select class="form-control" formControlName="role"
+                                [class.is-invalid]="isFieldInvalid('role')">
+                                <option value="">Select role</option>
+                                <option value="LOAN_OFFICER">Loan Officer</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a role</div>
+                        </div>
+
+                        <!-- Error Message -->
+                        <div *ngIf="errorMessage()" class="alert alert-danger">
+                            {{ errorMessage() }}
+                        </div>
+                    </div>
+
+                    <div class="card-footer d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary" (click)="goBack()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="loading()">
+                            <span *ngIf="!loading()">Create Account</span>
+                            <span *ngIf="loading()">
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                Creating...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

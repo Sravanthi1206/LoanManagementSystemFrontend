@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { AdminApiService } from '../../services/admin-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 import { LoanUtilsService } from '../../../../shared/services/loan-utils.service';
@@ -9,16 +9,16 @@ import { User, DashboardStats } from '../../../../shared/types/models';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
 })
 export class AdminDashboardComponent implements OnInit {
   protected Math = Math;
   protected loanUtils = inject(LoanUtilsService);
-  private fb = inject(FormBuilder);
   private adminApi = inject(AdminApiService);
   private authState = inject(AuthStateService);
+  private router = inject(Router);
 
   currentUserId = computed(() => this.authState.getUser()?.id);
 
@@ -36,23 +36,9 @@ export class AdminDashboardComponent implements OnInit {
 
   selectedUser = signal<User | null>(null);
   userToDeactivate = signal<User | null>(null);
-  showStaffModal = signal(false);
-
-  createStaffForm: FormGroup;
 
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
-
-  constructor() {
-    this.createStaffForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      password: ['', Validators.required],
-      role: ['', Validators.required]
-    });
-  }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -177,25 +163,6 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   showCreateStaffModal(): void {
-    this.createStaffForm.reset();
-    this.showStaffModal.set(true);
-  }
-
-  confirmCreateStaff(): void {
-    if (this.createStaffForm.invalid) return;
-
-    this.processing.set(true);
-    this.adminApi.createStaffAccount(this.createStaffForm.value).subscribe({
-      next: () => {
-        this.processing.set(false);
-        this.showStaffModal.set(false);
-        this.showToast('Staff account created successfully');
-        this.loadDashboardData();
-      },
-      error: (err) => {
-        this.processing.set(false);
-        this.showToast(err.message || 'Failed to create staff account', 'error');
-      }
-    });
+    this.router.navigate(['/admin/create-staff']);
   }
 }
