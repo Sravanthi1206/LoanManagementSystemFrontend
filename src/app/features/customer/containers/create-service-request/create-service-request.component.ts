@@ -1,13 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { LoanApiService } from '../../services/loan-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 
 @Component({
   selector: 'app-create-service-request',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './create-service-request.component.html',
   styleUrl: './create-service-request.component.css'
 })
@@ -44,6 +45,19 @@ export class CreateServiceRequestComponent {
   }
 
   open(onSuccess?: () => void): void {
+    const user = this.authState.getUser();
+    if (!user) {
+      this.errorMessage.set('Please log in to apply for a loan.');
+      return;
+    }
+
+    // Check if user has completed profile with DOB and PAN
+    if (!user.dateOfBirth || !user.panCard) {
+      this.errorMessage.set('Please update your profile with Date of Birth and PAN Card before applying for a loan.');
+      this.isOpen.set(true);
+      return;
+    }
+
     this.isOpen.set(true);
     this.onSuccess = onSuccess;
     this.formSubmitted = false;

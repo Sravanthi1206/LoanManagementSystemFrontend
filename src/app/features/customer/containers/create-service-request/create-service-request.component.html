@@ -6,6 +6,14 @@
                 <button type="button" class="btn-close" (click)="close()">&times;</button>
             </div>
 
+            <!-- Profile Incomplete State -->
+            <div *ngIf="errorMessage() && !successMessage() && loanForm.pristine" class="modal-body text-center py-5">
+                <div class="error-icon mb-3" style="font-size: 3rem; color: #dc3545;">⚠</div>
+                <h4 class="text-danger mb-3">Profile Incomplete</h4>
+                <p class="text-muted mb-4">{{ errorMessage() }}</p>
+                <a routerLink="/customer/profile" class="btn btn-primary" (click)="close()">Update Profile</a>
+            </div>
+
             <!-- Success State -->
             <div *ngIf="successMessage()" class="modal-body text-center py-5">
                 <div class="success-icon mb-3">✓</div>
