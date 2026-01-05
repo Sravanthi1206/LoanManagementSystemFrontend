@@ -1,1 +1,416 @@
-<p>officer-dashboard works!</p>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Loan Officer Dashboard</h2>
+            <p class="text-muted">Review and process loan applications</p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div *ngIf="toastMessage()" class="toast-notification" [class.toast-success]="toastType() === 'success'"
+        [class.toast-error]="toastType() === 'error'">
+        {{ toastMessage() }}
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ stats()?.appliedLoans || 0 }}</h3>
+                    <p class="mb-0">Pending Applications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ stats()?.underReviewLoans || 0 }}</h3>
+                    <p class="mb-0">Under Review</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ stats()?.approvedLoans || 0 }}</h3>
+                    <p class="mb-0">Approved</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <h3>{{ stats()?.rejectedLoans || 0 }}</h3>
+                    <p class="mb-0">Rejected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Loans Queue -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Pending Loan Applications</h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="loading()" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">Loading applications...</p>
+                    </div>
+
+                    <div *ngIf="!loading() && pendingLoans().length === 0" class="text-center py-4">
+                        <p class="text-muted">No pending applications</p>
+                    </div>
+
+                    <div *ngIf="!loading() && pendingLoans().length > 0" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Customer ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Applied On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let loan of pendingLoans()">
+                                    <td>#{{ loan.loanId }}</td>
+                                    <td>{{ loan.userId }}</td>
+                                    <td>{{ loanUtils.getLoanTypeDisplay(loan.type) }}</td>
+                                    <td>₹{{ loan.amountRequested | number }}</td>
+                                    <td>{{ loan.appliedOn | date: 'shortDate' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary me-2" (click)="startReview(loan.loanId)"
+                                            [disabled]="processing()">
+                                            Start Review
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" (click)="viewDetails(loan)">
+                                            Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Under Review Loans -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Loans Under Review</h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="underReviewLoans().length === 0" class="text-center py-4">
+                        <p class="text-muted">No loans under review</p>
+                    </div>
+
+                    <div *ngIf="underReviewLoans().length > 0" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Customer ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Credit Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let loan of underReviewLoans()">
+                                    <td>#{{ loan.loanId }}</td>
+                                    <td>{{ loan.userId }}</td>
+                                    <td>{{ loanUtils.getLoanTypeDisplay(loan.type) }}</td>
+                                    <td>₹{{ loan.amountRequested | number }}</td>
+                                    <td>
+                                        <span *ngIf="loan.creditScore"
+                                            [class]="'badge ' + getCreditScoreBadge(loan.creditScore)">
+                                            {{ loan.creditScore }}
+                                        </span>
+                                        <span *ngIf="!loan.creditScore" class="text-muted">Not checked</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success me-1" (click)="showApproveModal(loan)"
+                                            [disabled]="!loan.creditScore"
+                                            [title]="!loan.creditScore ? 'Perform credit check first' : 'Approve Loan'">
+                                            Approve
+                                        </button>
+                                        <button class="btn btn-sm btn-danger me-1" (click)="showRejectModal(loan)">
+                                            Reject
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" (click)="runCreditCheck(loan)"
+                                            [disabled]="!!loan.creditScore">
+                                            {{ loan.creditScore ? 'Checked' : 'Run Credit Check' }}
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approved Loans -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recently Approved Loans</h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="approvedLoans().length === 0" class="text-center py-4">
+                        <p class="text-muted">No approved loans</p>
+                    </div>
+
+                    <div *ngIf="approvedLoans().length > 0" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Customer ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Approved Amount</th>
+                                    <th>Approved On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let loan of approvedLoans()">
+                                    <td>#{{ loan.loanId }}</td>
+                                    <td>{{ loan.userId }}</td>
+                                    <td>{{ loanUtils.getLoanTypeDisplay(loan.type) }}</td>
+                                    <td>₹{{ loan.amountRequested | number }}</td>
+                                    <td>₹{{ loan.amountApproved | number }}</td>
+                                    <td>{{ loan.approvedOn | date: 'shortDate' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success me-1" (click)="showDisburseModal(loan)"
+                                            [disabled]="processing()">
+                                            Disburse
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" (click)="viewDetails(loan)">
+                                            Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan History -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Loan History (Processed Applications)</h5>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="loanHistory().length === 0" class="text-center py-4">
+                        <p class="text-muted">No loan history available</p>
+                    </div>
+
+                    <div *ngIf="loanHistory().length > 0" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Customer ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let loan of loanHistory()">
+                                    <td>#{{ loan.loanId }}</td>
+                                    <td>{{ loan.userId }}</td>
+                                    <td>{{ loanUtils.getLoanTypeDisplay(loan.type) }}</td>
+                                    <td>₹{{ loan.amountRequested | number }}</td>
+                                    <td>
+                                        <span [class]="'badge ' + loanUtils.getStatusBadgeClass(loan.status)">
+                                            {{ loan.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ loan.appliedOn | date: 'shortDate' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" (click)="viewDetails(loan)">
+                                            Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Details Modal -->
+<div class="modal-overlay" *ngIf="selectedLoan()" (click)="selectedLoan.set(null)">
+    <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Loan Details #{{ selectedLoan()?.loanId }}</h5>
+                <button type="button" class="btn-close" (click)="selectedLoan.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Customer ID:</strong> {{ selectedLoan()?.userId }}</p>
+                        <p><strong>Type:</strong> {{ loanUtils.getLoanTypeDisplay(selectedLoan()?.type || '') }}</p>
+                        <p><strong>Amount Requested:</strong> ₹{{ selectedLoan()?.amountRequested | number }}</p>
+                        <p><strong>Tenure:</strong> {{ selectedLoan()?.tenureMonths }} months</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Purpose:</strong> {{ selectedLoan()?.purpose }}</p>
+                        <p><strong>Employment:</strong> {{ selectedLoan()?.employmentType }}</p>
+                        <p><strong>Monthly Income:</strong> ₹{{ selectedLoan()?.monthlyIncome | number }}</p>
+                        <p><strong>Applied On:</strong> {{ selectedLoan()?.appliedOn | date: 'medium' }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="selectedLoan.set(null)">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Credit Check Confirmation Modal -->
+<div class="modal-overlay" *ngIf="creditCheckLoan()" (click)="creditCheckLoan.set(null)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Credit Check</h5>
+                <button type="button" class="btn-close" (click)="creditCheckLoan.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Run automated credit check for Loan <strong>#{{ creditCheckLoan()?.loanId }}</strong>?</p>
+                <p class="text-muted small">This will fetch credit history and generate a score.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="creditCheckLoan.set(null)">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="confirmCreditCheck()" [disabled]="processing()">
+                    <span *ngIf="!processing()">Confirm Check</span>
+                    <span *ngIf="processing()"><span
+                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal-overlay" *ngIf="approveLoan()" (click)="approveLoan.set(null)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Approve Loan #{{ approveLoan()?.loanId }}</h5>
+                <button type="button" class="btn-close" (click)="approveLoan.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Approved Amount (₹)</label>
+                    <input type="number" class="form-control" [(ngModel)]="approvedAmount"
+                        [placeholder]="approveLoan()?.amountRequested">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Interest Rate (%)</label>
+                    <input type="number" class="form-control" [(ngModel)]="interestRate" step="0.1"
+                        placeholder="e.g., 10.5">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Remarks</label>
+                    <textarea class="form-control" [(ngModel)]="approvalRemarks" rows="2"
+                        placeholder="Optional remarks"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="approveLoan.set(null)">Cancel</button>
+                <button type="button" class="btn btn-success" (click)="confirmApprove()"
+                    [disabled]="!approvedAmount || !interestRate || processing()">
+                    <span *ngIf="!processing()">Approve</span>
+                    <span *ngIf="processing()"><span
+                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disburse Confirmation Modal -->
+<div class="modal-overlay" *ngIf="disburseLoan()" (click)="disburseLoan.set(null)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Disbursement</h5>
+                <button type="button" class="btn-close" (click)="disburseLoan.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you ready to disburse Loan <strong>#{{ disburseLoan()?.loanId }}</strong>?</p>
+                <div class="alert alert-info">
+                    <strong>Amount:</strong> ₹{{ disburseLoan()?.amountApproved | number }}<br>
+                    <strong>Interest Rate:</strong> {{ disburseLoan()?.interestRate }}%<br>
+                    <strong>Tenure:</strong> {{ disburseLoan()?.tenureMonths }} months
+                </div>
+                <p class="text-muted small">This will transfer funds to the customer and generate the EMI schedule.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="disburseLoan.set(null)">Cancel</button>
+                <button type="button" class="btn btn-success" (click)="confirmDisburse()" [disabled]="processing()">
+                    <span *ngIf="!processing()">Confirm Disbursement</span>
+                    <span *ngIf="processing()"><span
+                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" *ngIf="rejectLoan()" (click)="rejectLoan.set(null)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Loan #{{ rejectLoan()?.loanId }}</h5>
+                <button type="button" class="btn-close" (click)="rejectLoan.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                    <textarea class="form-control" [(ngModel)]="rejectionReason" rows="3"
+                        placeholder="Please provide a reason for rejection"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="rejectLoan.set(null)">Cancel</button>
+                <button type="button" class="btn btn-danger" (click)="confirmReject()"
+                    [disabled]="!rejectionReason || processing()">
+                    <span *ngIf="!processing()">Reject</span>
+                    <span *ngIf="processing()"><span
+                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

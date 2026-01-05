@@ -1,0 +1,10 @@
+/* Officer Dashboard - Minimal Component-Specific Styles */
+/* Most styles inherited from global styles.css */
+
+.alert-info {
+    background-color: #e3f2fd;
+    border: 1px solid #bbdefb;
+    color: #1565c0;
+    padding: 1rem;
+    border-radius: 6px;
+}
