@@ -48,6 +48,11 @@ export const routes: Routes = [
                     .then(m => m.ProfileComponent)
             },
             {
+                path: 'apply-loan',
+                loadComponent: () => import('./features/customer/pages/apply-loan/apply-loan.component')
+                    .then(m => m.ApplyLoanComponent)
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full'

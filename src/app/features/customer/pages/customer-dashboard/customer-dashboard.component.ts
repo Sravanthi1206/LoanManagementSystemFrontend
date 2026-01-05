@@ -1,23 +1,22 @@
-import { Component, OnInit, inject, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
 import { LoanApiService } from '../../services/loan-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 import { LoanUtilsService } from '../../../../shared/services/loan-utils.service';
 import { Loan, EmiSchedule, WalletBalance, Payment } from '../../../../shared/types/models';
-import { CreateServiceRequestComponent } from '../../containers/create-service-request/create-service-request.component';
 
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [CommonModule, CreateServiceRequestComponent],
+  imports: [CommonModule, RouterLink],
   templateUrl: './customer-dashboard.component.html',
   styleUrl: './customer-dashboard.component.css'
 })
 export class CustomerDashboardComponent implements OnInit {
   private loanApi = inject(LoanApiService);
   private authState = inject(AuthStateService);
-
-  @ViewChild('loanForm') loanFormComponent!: CreateServiceRequestComponent;
+  private router = inject(Router);
 
   myLoans = signal<Loan[]>([]);
   upcomingEmis = signal<EmiSchedule[]>([]);
@@ -97,10 +96,7 @@ export class CustomerDashboardComponent implements OnInit {
 
 
   showApplyLoanModal(): void {
-    const user = this.authState.getUser();
-    if (user) {
-      this.loanFormComponent.open(() => this.loadDashboardData(user.id));
-    }
+    this.router.navigate(['/customer/apply-loan']);
   }
 
   viewLoanDetails(loan: Loan): void {
