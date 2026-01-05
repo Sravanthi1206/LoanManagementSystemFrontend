@@ -1,0 +1,28 @@
+/* Admin Dashboard - Minimal Component-Specific Styles */
+/* Most styles inherited from global styles.css */
+
+.progress {
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: #000;
+    transition: width 0.3s ease;
+}
+
+.pagination .page-link {
+    color: #000;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background: #000;
+    border-color: #000;
+    color: #fff;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+}

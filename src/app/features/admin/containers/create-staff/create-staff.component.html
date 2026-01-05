@@ -1,0 +1,65 @@
+<div class="modal-overlay" *ngIf="isOpen()" (click)="close()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Staff Account</h5>
+                <button type="button" class="btn-close" (click)="close()"></button>
+            </div>
+            <form [formGroup]="staffForm" (ngSubmit)="onSubmit()">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" formControlName="name" placeholder="Enter full name">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" formControlName="email" placeholder="Enter email">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password *</label>
+                        <input type="password" class="form-control" formControlName="password"
+                            placeholder="Create password" minlength="6">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-control" formControlName="phoneNumber"
+                            placeholder="10-digit mobile number">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Address *</label>
+                        <textarea class="form-control" formControlName="address" rows="2"
+                            placeholder="Enter address"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Role *</label>
+                        <select class="form-control" formControlName="role">
+                            <option value="">Select role</option>
+                            <option value="LOAN_OFFICER">Loan Officer</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+
+                    <div *ngIf="errorMessage()" class="alert alert-danger">
+                        {{ errorMessage() }}
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="close()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="staffForm.invalid || loading()">
+                        <span *ngIf="!loading()">Create Account</span>
+                        <span *ngIf="loading()">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Creating...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
