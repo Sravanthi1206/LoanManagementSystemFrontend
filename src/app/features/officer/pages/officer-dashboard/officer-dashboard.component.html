@@ -328,32 +328,34 @@
                 <h5 class="modal-title">Approve Loan #{{ approveLoan()?.loanId }}</h5>
                 <button type="button" class="btn-close" (click)="approveLoan.set(null)">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Approved Amount (₹)</label>
-                    <input type="number" class="form-control" [(ngModel)]="approvedAmount"
-                        [placeholder]="approveLoan()?.amountRequested">
+            <form [formGroup]="approveForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Approved Amount (₹)</label>
+                        <input type="number" class="form-control" formControlName="approvedAmount"
+                            [placeholder]="approveLoan()?.amountRequested">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Interest Rate (%)</label>
+                        <input type="number" class="form-control" formControlName="interestRate" step="0.1"
+                            placeholder="e.g., 10.5">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Remarks</label>
+                        <textarea class="form-control" formControlName="approvalRemarks" rows="2"
+                            placeholder="Optional remarks"></textarea>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Interest Rate (%)</label>
-                    <input type="number" class="form-control" [(ngModel)]="interestRate" step="0.1"
-                        placeholder="e.g., 10.5">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="approveLoan.set(null)">Cancel</button>
+                    <button type="button" class="btn btn-success" (click)="confirmApprove()"
+                        [disabled]="approveForm.invalid || processing()">
+                        <span *ngIf="!processing()">Approve</span>
+                        <span *ngIf="processing()"><span
+                                class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                    </button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Remarks</label>
-                    <textarea class="form-control" [(ngModel)]="approvalRemarks" rows="2"
-                        placeholder="Optional remarks"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="approveLoan.set(null)">Cancel</button>
-                <button type="button" class="btn btn-success" (click)="confirmApprove()"
-                    [disabled]="!approvedAmount || !interestRate || processing()">
-                    <span *ngIf="!processing()">Approve</span>
-                    <span *ngIf="processing()"><span
-                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -395,22 +397,24 @@
                 <h5 class="modal-title">Reject Loan #{{ rejectLoan()?.loanId }}</h5>
                 <button type="button" class="btn-close" (click)="rejectLoan.set(null)">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
-                    <textarea class="form-control" [(ngModel)]="rejectionReason" rows="3"
-                        placeholder="Please provide a reason for rejection"></textarea>
+            <form [formGroup]="rejectForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                        <textarea class="form-control" formControlName="rejectionReason" rows="3"
+                            placeholder="Please provide a reason for rejection"></textarea>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="rejectLoan.set(null)">Cancel</button>
-                <button type="button" class="btn btn-danger" (click)="confirmReject()"
-                    [disabled]="!rejectionReason || processing()">
-                    <span *ngIf="!processing()">Reject</span>
-                    <span *ngIf="processing()"><span
-                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
-                </button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="rejectLoan.set(null)">Cancel</button>
+                    <button type="button" class="btn btn-danger" (click)="confirmReject()"
+                        [disabled]="rejectForm.invalid || processing()">
+                        <span *ngIf="!processing()">Reject</span>
+                        <span *ngIf="processing()"><span
+                                class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

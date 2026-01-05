@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OfficerApiService } from '../../services/officer-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 import { LoanUtilsService } from '../../../../shared/services/loan-utils.service';
@@ -9,13 +9,15 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
 @Component({
   selector: 'app-officer-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './officer-dashboard.component.html',
   styleUrl: './officer-dashboard.component.css'
 })
 export class OfficerDashboardComponent implements OnInit {
+  private fb = inject(FormBuilder);
   private officerApi = inject(OfficerApiService);
   private authState = inject(AuthStateService);
+  protected loanUtils = inject(LoanUtilsService);
 
   stats = signal<DashboardStats | null>(null);
   pendingLoans = signal<Loan[]>([]);
@@ -31,13 +33,23 @@ export class OfficerDashboardComponent implements OnInit {
   rejectLoan = signal<Loan | null>(null);
   disburseLoan = signal<Loan | null>(null);
 
-  approvedAmount = 0;
-  interestRate = 0;
-  approvalRemarks = '';
-  rejectionReason = '';
+  approveForm: FormGroup;
+  rejectForm: FormGroup;
 
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
+
+  constructor() {
+    this.approveForm = this.fb.group({
+      approvedAmount: [0, [Validators.required, Validators.min(1)]],
+      interestRate: [0, [Validators.required, Validators.min(0.1)]],
+      approvalRemarks: ['']
+    });
+
+    this.rejectForm = this.fb.group({
+      rejectionReason: ['', Validators.required]
+    });
+  }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -93,9 +105,6 @@ export class OfficerDashboardComponent implements OnInit {
     });
   }
 
-  protected loanUtils = inject(LoanUtilsService);
-
-
   getCreditScoreBadge(score: number): string {
     if (score >= 750) return 'bg-success';
     if (score >= 650) return 'bg-warning';
@@ -149,21 +158,24 @@ export class OfficerDashboardComponent implements OnInit {
   }
 
   showApproveModal(loan: Loan): void {
-    this.approvedAmount = loan.amountRequested;
-    this.interestRate = 10.5;
-    this.approvalRemarks = '';
+    this.approveForm.patchValue({
+      approvedAmount: loan.amountRequested,
+      interestRate: 10.5,
+      approvalRemarks: ''
+    });
     this.approveLoan.set(loan);
   }
 
   confirmApprove(): void {
     const loan = this.approveLoan();
-    if (!loan) return;
+    if (!loan || this.approveForm.invalid) return;
 
     this.processing.set(true);
+    const formValue = this.approveForm.value;
     this.officerApi.approveLoan(loan.loanId, {
-      approvedAmount: this.approvedAmount,
-      interestRate: this.interestRate,
-      remarks: this.approvalRemarks || 'Approved by officer'
+      approvedAmount: formValue.approvedAmount,
+      interestRate: formValue.interestRate,
+      remarks: formValue.approvalRemarks || 'Approved by officer'
     }).subscribe({
       next: () => {
         this.processing.set(false);
@@ -179,16 +191,16 @@ export class OfficerDashboardComponent implements OnInit {
   }
 
   showRejectModal(loan: Loan): void {
-    this.rejectionReason = '';
+    this.rejectForm.reset();
     this.rejectLoan.set(loan);
   }
 
   confirmReject(): void {
     const loan = this.rejectLoan();
-    if (!loan) return;
+    if (!loan || this.rejectForm.invalid) return;
 
     this.processing.set(true);
-    this.officerApi.rejectLoan(loan.loanId, this.rejectionReason).subscribe({
+    this.officerApi.rejectLoan(loan.loanId, this.rejectForm.value.rejectionReason).subscribe({
       next: () => {
         this.processing.set(false);
         this.rejectLoan.set(null);

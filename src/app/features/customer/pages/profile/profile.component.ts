@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LoanApiService } from '../../services/loan-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 import { User } from '../../../../shared/types/models';
@@ -8,7 +8,7 @@ import { User } from '../../../../shared/types/models';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="container py-4">
       <div class="row justify-content-center">
@@ -23,15 +23,15 @@ import { User } from '../../../../shared/types/models';
                 <p class="mt-2">Loading profile...</p>
               </div>
 
-              <form *ngIf="!loading() && user()" (ngSubmit)="saveProfile()">
+              <form *ngIf="!loading() && user()" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label class="form-label">First Name</label>
-                    <input type="text" class="form-control" [(ngModel)]="firstName" name="firstName" required>
+                    <input type="text" class="form-control" formControlName="firstName">
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Last Name</label>
-                    <input type="text" class="form-control" [(ngModel)]="lastName" name="lastName" required>
+                    <input type="text" class="form-control" formControlName="lastName">
                   </div>
                 </div>
 
@@ -43,19 +43,17 @@ import { User } from '../../../../shared/types/models';
 
                 <div class="mb-3">
                   <label class="form-label">Phone</label>
-                  <input type="tel" class="form-control" [(ngModel)]="phone" name="phone" required
-                         pattern="^\\+?[1-9]\\d{9,14}$" placeholder="+919876543210">
+                  <input type="tel" class="form-control" formControlName="phone" placeholder="+919876543210">
                 </div>
 
                 <div class="mb-3">
                   <label class="form-label">Date of Birth</label>
-                  <input type="date" class="form-control" [(ngModel)]="dateOfBirth" name="dateOfBirth">
+                  <input type="date" class="form-control" formControlName="dateOfBirth">
                 </div>
 
                 <div class="mb-3">
                   <label class="form-label">PAN Card</label>
-                  <input type="text" class="form-control" [(ngModel)]="panCard" name="panCard" 
-                         pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" placeholder="ABCDE1234F">
+                  <input type="text" class="form-control" formControlName="panCard" placeholder="ABCDE1234F">
                 </div>
 
                 <hr class="my-4">
@@ -67,8 +65,8 @@ import { User } from '../../../../shared/types/models';
                 <div class="mb-3">
                   <label class="form-label">Password <span class="text-danger">*</span></label>
                   <div class="password-input-wrapper">
-                    <input [type]="showPassword ? 'text' : 'password'" class="form-control" [(ngModel)]="password" name="password" 
-                           required placeholder="Enter your password to confirm changes">
+                    <input [type]="showPassword ? 'text' : 'password'" class="form-control" formControlName="password" 
+                           placeholder="Enter your password to confirm changes">
                     <button type="button" class="password-toggle-btn" (click)="showPassword = !showPassword" tabindex="-1">
                       <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
@@ -77,7 +75,7 @@ import { User } from '../../../../shared/types/models';
                 </div>
 
                 <div class="d-flex gap-2">
-                  <button type="submit" class="btn btn-primary" [disabled]="saving() || !password">
+                  <button type="submit" class="btn btn-primary" [disabled]="saving() || profileForm.get('password')?.invalid">
                     <span *ngIf="!saving()">Save Changes</span>
                     <span *ngIf="saving()">
                       <span class="spinner-border spinner-border-sm me-2"></span>Saving...
@@ -140,6 +138,7 @@ import { User } from '../../../../shared/types/models';
   `]
 })
 export class ProfileComponent implements OnInit {
+  private fb = inject(FormBuilder);
   private loanApi = inject(LoanApiService);
   private authState = inject(AuthStateService);
 
@@ -148,14 +147,20 @@ export class ProfileComponent implements OnInit {
   saving = signal(false);
   message = signal('');
   isError = signal(false);
-
-  firstName = '';
-  lastName = '';
-  phone = '';
-  dateOfBirth = '';
-  panCard = '';
-  password = '';
   showPassword = false;
+
+  profileForm: FormGroup;
+
+  constructor() {
+    this.profileForm = this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern(/^\+?[1-9]\d{9,14}$/)]],
+      dateOfBirth: [''],
+      panCard: ['', Validators.pattern(/[A-Z]{5}[0-9]{4}[A-Z]{1}/)],
+      password: ['', Validators.required]
+    });
+  }
 
   ngOnInit(): void {
     this.loadProfile();
@@ -166,30 +171,33 @@ export class ProfileComponent implements OnInit {
     const currentUser = this.authState.getUser();
     if (currentUser) {
       this.user.set(currentUser);
-      this.firstName = currentUser.firstName || '';
-      this.lastName = currentUser.lastName || '';
-      this.phone = currentUser.phone || '';
-      this.dateOfBirth = currentUser.dateOfBirth || '';
-      this.panCard = currentUser.panCard || '';
+      this.profileForm.patchValue({
+        firstName: currentUser.firstName || '',
+        lastName: currentUser.lastName || '',
+        phone: currentUser.phone || '',
+        dateOfBirth: currentUser.dateOfBirth || '',
+        panCard: currentUser.panCard || ''
+      });
       this.loading.set(false);
     }
   }
 
   saveProfile(): void {
     const currentUser = this.user();
-    if (!currentUser || !this.password) return;
+    if (!currentUser || this.profileForm.get('password')?.invalid) return;
 
     this.saving.set(true);
     this.message.set('');
 
+    const formValue = this.profileForm.value;
     const updateData = {
       email: currentUser.email,
-      password: this.password,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      phone: this.phone,
-      dateOfBirth: this.dateOfBirth || null,
-      panCard: this.panCard || null
+      password: formValue.password,
+      firstName: formValue.firstName,
+      lastName: formValue.lastName,
+      phone: formValue.phone,
+      dateOfBirth: formValue.dateOfBirth || null,
+      panCard: formValue.panCard || null
     };
 
     this.loanApi.updateUserProfile(currentUser.id, updateData).subscribe({
@@ -197,11 +205,18 @@ export class ProfileComponent implements OnInit {
         this.saving.set(false);
         this.message.set('Profile updated successfully!');
         this.isError.set(false);
-        this.password = '';
+        this.profileForm.patchValue({ password: '' });
         // Update local storage
         const storedUser = this.authState.getUser();
         if (storedUser) {
-          const merged = { ...storedUser, firstName: this.firstName, lastName: this.lastName, phone: this.phone, dateOfBirth: this.dateOfBirth, panCard: this.panCard };
+          const merged = {
+            ...storedUser,
+            firstName: formValue.firstName,
+            lastName: formValue.lastName,
+            phone: formValue.phone,
+            dateOfBirth: formValue.dateOfBirth,
+            panCard: formValue.panCard
+          };
           localStorage.setItem('user', JSON.stringify(merged));
         }
       },
@@ -209,7 +224,7 @@ export class ProfileComponent implements OnInit {
         this.saving.set(false);
         this.message.set(err.error?.message || 'Failed to update profile. Check your password.');
         this.isError.set(true);
-        this.password = '';
+        this.profileForm.patchValue({ password: '' });
       }
     });
   }

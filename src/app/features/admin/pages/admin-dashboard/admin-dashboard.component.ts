@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminApiService } from '../../services/admin-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 import { LoanUtilsService } from '../../../../shared/services/loan-utils.service';
@@ -9,13 +9,14 @@ import { User, DashboardStats } from '../../../../shared/types/models';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
 })
 export class AdminDashboardComponent implements OnInit {
   protected Math = Math;
   protected loanUtils = inject(LoanUtilsService);
+  private fb = inject(FormBuilder);
   private adminApi = inject(AdminApiService);
   private authState = inject(AuthStateService);
 
@@ -37,17 +38,21 @@ export class AdminDashboardComponent implements OnInit {
   userToDeactivate = signal<User | null>(null);
   showStaffModal = signal(false);
 
-  staffForm = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-    role: ''
-  };
+  createStaffForm: FormGroup;
 
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
+
+  constructor() {
+    this.createStaffForm = this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+      password: ['', Validators.required],
+      role: ['', Validators.required]
+    });
+  }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -124,8 +129,6 @@ export class AdminDashboardComponent implements OnInit {
     return (count / this.getTotalLoans()) * 100;
   }
 
-
-
   viewUserDetails(user: User): void {
     this.selectedUser.set(user);
   }
@@ -174,21 +177,15 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   showCreateStaffModal(): void {
-    this.staffForm = { firstName: '', lastName: '', email: '', phone: '', password: '', role: '' };
+    this.createStaffForm.reset();
     this.showStaffModal.set(true);
   }
 
-  isStaffFormValid(): boolean {
-    const phoneValid = /^\d{10}$/.test(this.staffForm.phone);
-    return !!(this.staffForm.firstName && this.staffForm.lastName &&
-      this.staffForm.email && phoneValid && this.staffForm.password && this.staffForm.role);
-  }
-
   confirmCreateStaff(): void {
-    if (!this.isStaffFormValid()) return;
+    if (this.createStaffForm.invalid) return;
 
     this.processing.set(true);
-    this.adminApi.createStaffAccount(this.staffForm).subscribe({
+    this.adminApi.createStaffAccount(this.createStaffForm.value).subscribe({
       next: () => {
         this.processing.set(false);
         this.showStaffModal.set(false);

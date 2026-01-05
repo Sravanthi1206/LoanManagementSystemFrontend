@@ -239,49 +239,51 @@
                 <h5 class="modal-title">Create Staff Account</h5>
                 <button type="button" class="btn-close" (click)="showStaffModal.set(false)">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">First Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" [(ngModel)]="staffForm.firstName"
-                        placeholder="Enter first name">
+            <form [formGroup]="createStaffForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">First Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" formControlName="firstName"
+                            placeholder="Enter first name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" formControlName="lastName"
+                            placeholder="Enter last name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" formControlName="email" placeholder="Enter email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" formControlName="phone"
+                            placeholder="Enter 10-digit phone number" maxlength="10">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" formControlName="password"
+                            placeholder="Enter password">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role <span class="text-danger">*</span></label>
+                        <select class="form-control" formControlName="role">
+                            <option value="">Select role</option>
+                            <option value="LOAN_OFFICER">Loan Officer</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" [(ngModel)]="staffForm.lastName"
-                        placeholder="Enter last name">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="showStaffModal.set(false)">Cancel</button>
+                    <button type="button" class="btn btn-primary" (click)="confirmCreateStaff()"
+                        [disabled]="createStaffForm.invalid || processing()">
+                        <span *ngIf="!processing()">Create Account</span>
+                        <span *ngIf="processing()"><span
+                                class="spinner-border spinner-border-sm me-2"></span>Creating...</span>
+                    </button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control" [(ngModel)]="staffForm.email" placeholder="Enter email">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Phone <span class="text-danger">*</span></label>
-                    <input type="tel" class="form-control" [(ngModel)]="staffForm.phone"
-                        placeholder="Enter 10-digit phone number" maxlength="10">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Password <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control" [(ngModel)]="staffForm.password"
-                        placeholder="Enter password">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Role <span class="text-danger">*</span></label>
-                    <select class="form-control" [(ngModel)]="staffForm.role">
-                        <option value="">Select role</option>
-                        <option value="LOAN_OFFICER">Loan Officer</option>
-                        <option value="ADMIN">Admin</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="showStaffModal.set(false)">Cancel</button>
-                <button type="button" class="btn btn-primary" (click)="confirmCreateStaff()"
-                    [disabled]="!isStaffFormValid() || processing()">
-                    <span *ngIf="!processing()">Create Account</span>
-                    <span *ngIf="processing()"><span
-                            class="spinner-border spinner-border-sm me-2"></span>Creating...</span>
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
