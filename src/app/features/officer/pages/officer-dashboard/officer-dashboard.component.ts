@@ -19,6 +19,9 @@ export class OfficerDashboardComponent implements OnInit {
   private authState = inject(AuthStateService);
   protected loanUtils = inject(LoanUtilsService);
 
+  // Current officer info
+  currentOfficerId = signal<number | null>(null);
+
   stats = signal<DashboardStats | null>(null);
   pendingLoans = signal<Loan[]>([]);
   underReviewLoans = signal<Loan[]>([]);
@@ -26,6 +29,12 @@ export class OfficerDashboardComponent implements OnInit {
   loanHistory = signal<Loan[]>([]);
   loading = signal(true);
   processing = signal(false);
+
+  // Computed: My loans vs available loans
+  myPendingLoans = () => this.pendingLoans().filter(l => l.assignedOfficerId === this.currentOfficerId());
+  availablePendingLoans = () => this.pendingLoans().filter(l => !l.assignedOfficerId);
+  myUnderReviewLoans = () => this.underReviewLoans().filter(l => l.assignedOfficerId === this.currentOfficerId());
+  myApprovedLoans = () => this.approvedLoans().filter(l => l.assignedOfficerId === this.currentOfficerId());
 
   selectedLoan = signal<Loan | null>(null);
   creditCheckLoan = signal<Loan | null>(null);
@@ -64,6 +73,10 @@ export class OfficerDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const user = this.authState.getUser();
+    if (user) {
+      this.currentOfficerId.set(user.id);
+    }
     this.loadDashboardData();
   }
 

@@ -15,7 +15,7 @@ export interface User {
     createdAt?: string;
 }
 
-export type UserRole = 'CUSTOMER' | 'LOAN_OFFICER' | 'ADMIN';
+export type UserRole = 'CUSTOMER' | 'LOAN_OFFICER' | 'ADMIN' | 'ROOT_ADMIN';
 
 export interface LoginRequest {
     email: string;
@@ -61,6 +61,7 @@ export interface Loan {
     existingLoans?: boolean;
     riskCategory?: string;
     assignedOfficerId?: number;
+    assignedOfficerName?: string;  // For displaying officer name
 }
 
 export type LoanType = 'HOME_LOAN' | 'PERSONAL_LOAN' | 'CAR_LOAN' | 'EDUCATION_LOAN' | 'BUSINESS_LOAN';
