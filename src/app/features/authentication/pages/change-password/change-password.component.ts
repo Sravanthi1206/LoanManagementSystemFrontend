@@ -9,96 +9,8 @@ import { AuthStateService } from '../../../../core/services/auth-state.service';
   selector: 'app-change-password',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  template: `
-    <div class="login-container">
-      <div class="login-card">
-        <div class="text-center mb-4">
-          <h2 class="mb-2">Change Password</h2>
-          <p class="text-muted">You must change your password to continue</p>
-        </div>
-
-        <form [formGroup]="changePasswordForm" (ngSubmit)="onSubmit()">
-          <div class="mb-3">
-            <label for="oldPassword" class="form-label">Old Password</label>
-            <input
-              type="password"
-              class="form-control"
-              id="oldPassword"
-              formControlName="oldPassword"
-              [class.is-invalid]="oldPassword?.invalid && oldPassword?.touched"
-            />
-            <div class="invalid-feedback" *ngIf="oldPassword?.invalid && oldPassword?.touched">
-               <span *ngIf="oldPassword?.errors?.['required']">Old password is required</span>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="newPassword" class="form-label">New Password</label>
-            <input
-              type="password"
-              class="form-control"
-              id="newPassword"
-              formControlName="newPassword"
-              [class.is-invalid]="newPassword?.invalid && newPassword?.touched"
-            />
-            <div class="invalid-feedback" *ngIf="newPassword?.invalid && newPassword?.touched">
-              <span *ngIf="newPassword?.errors?.['required']">New password is required</span>
-              <span *ngIf="newPassword?.errors?.['minlength']">Must be at least 8 characters</span>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="confirmPassword" class="form-label">Confirm New Password</label>
-            <input
-              type="password"
-              class="form-control"
-              id="confirmPassword"
-              formControlName="confirmPassword"
-              [class.is-invalid]="confirmPassword?.invalid && confirmPassword?.touched"
-            />
-            <div class="invalid-feedback" *ngIf="changePasswordForm.errors?.['mismatch'] && confirmPassword?.touched">
-              Passwords do not match
-            </div>
-          </div>
-
-          <div class="alert alert-danger" *ngIf="errorMessage">
-            {{ errorMessage }}
-          </div>
-
-          <button
-            type="submit"
-            class="btn btn-primary w-100 mb-3"
-            [disabled]="changePasswordForm.invalid || loading"
-          >
-            <span *ngIf="!loading">Change Password</span>
-            <span *ngIf="loading">
-              <span class="spinner-border spinner-border-sm me-2"></span>
-              Updating...
-            </span>
-          </button>
-        </form>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .login-container {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
-      padding: 20px;
-    }
-
-    .login-card {
-      background: #ffffff;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 2.5rem;
-      max-width: 400px;
-      width: 100%;
-    }
-  `]
+  templateUrl: './change-password.component.html',
+  styleUrl: './change-password.component.css'
 })
 export class ChangePasswordComponent {
   private fb = inject(FormBuilder);
@@ -109,6 +21,9 @@ export class ChangePasswordComponent {
   changePasswordForm: FormGroup;
   loading = false;
   errorMessage = '';
+  showOldPassword = false;
+  showNewPassword = false;
+  showConfirmPassword = false;
 
   constructor() {
     this.changePasswordForm = this.fb.group({
@@ -126,6 +41,10 @@ export class ChangePasswordComponent {
     return g.get('newPassword')?.value === g.get('confirmPassword')?.value
       ? null : { mismatch: true };
   }
+
+  toggleOldPassword(): void { this.showOldPassword = !this.showOldPassword; }
+  toggleNewPassword(): void { this.showNewPassword = !this.showNewPassword; }
+  toggleConfirmPassword(): void { this.showConfirmPassword = !this.showConfirmPassword; }
 
   onSubmit(): void {
     if (this.changePasswordForm.valid) {
