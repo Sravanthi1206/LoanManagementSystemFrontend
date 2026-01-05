@@ -12,7 +12,7 @@ import { NotificationDropdownComponent } from '../../shared/components/notificat
     <div class="layout-wrapper">
       <nav class="navbar navbar-customer">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-          <a class="navbar-brand" routerLink="/customer/dashboard">LMS • Customer Portal</a>
+          <a class="navbar-brand" routerLink="/customer/dashboard">LoanEazy</a>
           <div class="d-flex align-items-center gap-3">
             <a routerLink="/customer/profile" class="nav-icon" title="My Profile">👤</a>
             <app-notification-dropdown></app-notification-dropdown>

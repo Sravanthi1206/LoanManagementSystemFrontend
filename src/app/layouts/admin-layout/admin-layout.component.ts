@@ -12,7 +12,7 @@ import { NotificationDropdownComponent } from '../../shared/components/notificat
     <div class="layout-wrapper">
       <nav class="navbar navbar-admin">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-          <a class="navbar-brand" href="#">LMS • Administrator</a>
+          <a class="navbar-brand" href="#">LoanEazy • Admin</a>
           <div class="d-flex align-items-center gap-3">
             <app-notification-dropdown></app-notification-dropdown>
             <button class="btn btn-outline-light btn-sm" (click)="initiateLogout()">Logout</button>
