@@ -96,6 +96,11 @@ export const routes: Routes = [
                     .then(m => m.CreateStaffPageComponent)
             },
             {
+                path: 'users/:id',
+                loadComponent: () => import('./features/admin/pages/user-details/user-details.component')
+                    .then(m => m.UserDetailsComponent)
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full'

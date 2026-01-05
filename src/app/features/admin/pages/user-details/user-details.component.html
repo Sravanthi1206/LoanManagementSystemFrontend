@@ -1,0 +1,141 @@
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>User Details</h3>
+                <button class="btn btn-outline-secondary" (click)="goBack()">← Back to Dashboard</button>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="loading()" class="text-center py-5">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2">Loading user details...</p>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="errorMessage()" class="alert alert-danger">
+                {{ errorMessage() }}
+                <button class="btn btn-link" (click)="goBack()">Go back</button>
+            </div>
+
+            <!-- User Info Card -->
+            <div *ngIf="!loading() && user()" class="row">
+                <div class="col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Profile Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="avatar-circle">
+                                    {{ user()?.firstName?.charAt(0) }}{{ user()?.lastName?.charAt(0) }}
+                                </div>
+                                <h4 class="mt-2 mb-0">{{ user()?.firstName }} {{ user()?.lastName }}</h4>
+                                <span [class]="'badge ' + getRoleBadgeClass(user()?.role || '')">
+                                    {{ user()?.role }}
+                                </span>
+                            </div>
+                            <hr>
+                            <div class="info-row">
+                                <span class="label">Email:</span>
+                                <span class="value">{{ user()?.email }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Phone:</span>
+                                <span class="value">{{ user()?.phone || 'N/A' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Date of Birth:</span>
+                                <span class="value">{{ user()?.dateOfBirth | date:'mediumDate' || 'N/A' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">PAN Card:</span>
+                                <span class="value">{{ user()?.panCard || 'N/A' }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Status:</span>
+                                <span [class]="user()?.active ? 'badge bg-success' : 'badge bg-danger'">
+                                    {{ user()?.active ? 'Active' : 'Inactive' }}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Member Since:</span>
+                                <span class="value">{{ user()?.createdAt | date:'mediumDate' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Card -->
+                    <div class="card" *ngIf="user()?.role === 'CUSTOMER'">
+                        <div class="card-header">
+                            <h5 class="mb-0">Loan Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-item">
+                                <span class="stat-value">{{ userLoans().length }}</span>
+                                <span class="stat-label">Total Applications</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ getActiveLoanCount() }}</span>
+                                <span class="stat-label">Active Loans</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">₹{{ getTotalLoanAmount() | number }}</span>
+                                <span class="stat-label">Total Requested</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loans Table -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Loan History</h5>
+                        </div>
+                        <div class="card-body">
+                            <div *ngIf="loadingLoans()" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm"></div>
+                                <span class="ms-2">Loading loans...</span>
+                            </div>
+
+                            <div *ngIf="!loadingLoans() && userLoans().length === 0" class="text-center py-4">
+                                <p class="text-muted">No loan applications found</p>
+                            </div>
+
+                            <div *ngIf="!loadingLoans() && userLoans().length > 0" class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Loan ID</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Tenure</th>
+                                            <th>Status</th>
+                                            <th>Applied On</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let loan of userLoans()">
+                                            <td>#{{ loan.loanId }}</td>
+                                            <td>{{ loanUtils.getLoanTypeDisplay(loan.type) }}</td>
+                                            <td>₹{{ loan.amountRequested | number }}</td>
+                                            <td>{{ loan.tenureMonths }} months</td>
+                                            <td>
+                                                <span [class]="'badge ' + loanUtils.getStatusBadgeClass(loan.status)">
+                                                    {{ loanUtils.getStatusDisplay(loan.status) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ loan.appliedOn | date:'shortDate' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AdminApiService } from '../../services/admin-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
@@ -9,7 +10,7 @@ import { User, DashboardStats } from '../../../../shared/types/models';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
 })
@@ -24,7 +25,14 @@ export class AdminDashboardComponent implements OnInit {
 
   stats = signal<DashboardStats | null>(null);
   loansByType = signal<{ [key: string]: number } | null>(null);
+  loansByStatus = signal<{ [key: string]: number } | null>(null);
+  totalDisbursed = signal<number>(0);
   users = signal<User[]>([]);
+  filteredUsers = signal<User[]>([]);
+
+  searchQuery = signal('');
+  sortField = signal<string>('id');
+  sortDirection = signal<'asc' | 'desc'>('desc');
 
   currentPage = signal(0);
   pageSize = signal(10);
@@ -34,7 +42,6 @@ export class AdminDashboardComponent implements OnInit {
   loading = signal(true);
   processing = signal(false);
 
-  selectedUser = signal<User | null>(null);
   userToDeactivate = signal<User | null>(null);
 
   toastMessage = signal('');
@@ -63,6 +70,16 @@ export class AdminDashboardComponent implements OnInit {
       error: () => { }
     });
 
+    this.adminApi.getLoansByStatus().subscribe({
+      next: (data) => this.loansByStatus.set(data),
+      error: () => { }
+    });
+
+    this.adminApi.getTotalDisbursed().subscribe({
+      next: (data) => this.totalDisbursed.set(data.totalDisbursed || 0),
+      error: () => this.totalDisbursed.set(0)
+    });
+
     this.loadUsers();
   }
 
@@ -70,12 +87,62 @@ export class AdminDashboardComponent implements OnInit {
     this.adminApi.getAllUsers(this.currentPage(), this.pageSize()).subscribe({
       next: (response) => {
         this.users.set(response.content);
+        this.applyFilters();
         this.totalPages.set(response.totalPages);
         this.totalElements.set(response.totalElements);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  onSearchChange(query: string): void {
+    this.searchQuery.set(query);
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
+    let result = [...this.users()];
+
+    // Apply search filter
+    const query = this.searchQuery().toLowerCase();
+    if (query) {
+      result = result.filter(user =>
+        user.firstName?.toLowerCase().includes(query) ||
+        user.lastName?.toLowerCase().includes(query) ||
+        user.email?.toLowerCase().includes(query) ||
+        user.phone?.includes(query)
+      );
+    }
+
+    // Apply sorting
+    const field = this.sortField();
+    const dir = this.sortDirection() === 'asc' ? 1 : -1;
+    result.sort((a, b) => {
+      const aVal = (a as any)[field] || '';
+      const bVal = (b as any)[field] || '';
+      if (typeof aVal === 'string') {
+        return aVal.localeCompare(bVal) * dir;
+      }
+      return (aVal - bVal) * dir;
+    });
+
+    this.filteredUsers.set(result);
+  }
+
+  sortBy(field: string): void {
+    if (this.sortField() === field) {
+      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
+    } else {
+      this.sortField.set(field);
+      this.sortDirection.set('asc');
+    }
+    this.applyFilters();
+  }
+
+  getSortIcon(field: string): string {
+    if (this.sortField() !== field) return '↕';
+    return this.sortDirection() === 'asc' ? '↑' : '↓';
   }
 
   onPageChange(page: number): void {
@@ -106,6 +173,10 @@ export class AdminDashboardComponent implements OnInit {
     return ['HOME', 'PERSONAL', 'VEHICLE', 'EDUCATION', 'BUSINESS'];
   }
 
+  getLoanStatuses(): string[] {
+    return ['APPLIED', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'DISBURSED', 'CLOSED'];
+  }
+
   getTotalLoans(): number {
     if (!this.loansByType()) return 1;
     return Object.values(this.loansByType()!).reduce((sum, val) => sum + val, 0) || 1;
@@ -116,7 +187,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   viewUserDetails(user: User): void {
-    this.selectedUser.set(user);
+    this.router.navigate(['/admin/users', user.id]);
   }
 
   canDeactivate(user: User): boolean {
@@ -164,5 +235,37 @@ export class AdminDashboardComponent implements OnInit {
 
   showCreateStaffModal(): void {
     this.router.navigate(['/admin/create-staff']);
+  }
+
+  getRoleBadgeClass(role: string): string {
+    switch (role) {
+      case 'ADMIN': return 'bg-danger';
+      case 'LOAN_OFFICER': return 'bg-primary';
+      case 'CUSTOMER': return 'bg-success';
+      default: return 'bg-secondary';
+    }
+  }
+
+  getStatusColor(status: string): string {
+    const colors: { [key: string]: string } = {
+      'APPLIED': '#17a2b8',
+      'UNDER_REVIEW': '#ffc107',
+      'APPROVED': '#28a745',
+      'REJECTED': '#dc3545',
+      'DISBURSED': '#6610f2',
+      'CLOSED': '#6c757d'
+    };
+    return colors[status] || '#333';
+  }
+
+  getLoanTypeColor(type: string): string {
+    const colors: { [key: string]: string } = {
+      'HOME': '#0d6efd',
+      'PERSONAL': '#198754',
+      'VEHICLE': '#fd7e14',
+      'EDUCATION': '#6f42c1',
+      'BUSINESS': '#d63384'
+    };
+    return colors[type] || '#333';
   }
 }

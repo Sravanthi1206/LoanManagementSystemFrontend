@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { User, DashboardStats, PageResponse } from '../../../shared/types/models';
+import { User, DashboardStats, PageResponse, Loan } from '../../../shared/types/models';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,14 @@ export class AdminApiService {
     return this.http.get<{ [key: string]: number }>(`${this.apiUrl}/dashboard/loans-by-type`);
   }
 
+  getLoansByStatus(): Observable<{ [key: string]: number }> {
+    return this.http.get<{ [key: string]: number }>(`${this.apiUrl}/dashboard/loans-by-status`);
+  }
+
+  getTotalDisbursed(): Observable<{ totalDisbursed: number }> {
+    return this.http.get<{ totalDisbursed: number }>(`${this.apiUrl}/dashboard/total-disbursed`);
+  }
+
   // User Management APIs
   getAllUsers(page: number = 0, size: number = 100): Observable<PageResponse<User>> {
     const params = new HttpParams()
@@ -29,8 +37,20 @@ export class AdminApiService {
     return this.http.get<PageResponse<User>>(`${this.apiUrl}/users`, { params });
   }
 
+  searchUsers(query: string, page: number = 0, size: number = 20): Observable<PageResponse<User>> {
+    const params = new HttpParams()
+      .set('query', query)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<PageResponse<User>>(`${this.apiUrl}/users/search`, { params });
+  }
+
   getUserById(id: number): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/users/${id}`);
+  }
+
+  getLoansByUserId(userId: number): Observable<Loan[]> {
+    return this.http.get<Loan[]>(`${this.apiUrl}/loans/user/${userId}`);
   }
 
   createStaffAccount(data: any): Observable<{ id: number }> {
