@@ -72,6 +72,11 @@ export const routes: Routes = [
                     .then(m => m.OfficerDashboardComponent)
             },
             {
+                path: 'loans/:id',
+                loadComponent: () => import('./features/officer/pages/loan-review/loan-review.component')
+                    .then(m => m.LoanReviewComponent)
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full'

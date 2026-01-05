@@ -1,0 +1,183 @@
+<div class="loan-review-page">
+    <!-- Toast -->
+    <div *ngIf="toastMessage()" class="toast-notification" [class.error]="toastType() === 'error'">
+        {{ toastMessage() }}
+    </div>
+
+    <!-- Header -->
+    <div class="page-header">
+        <button class="btn-back" (click)="goBack()">← Back</button>
+        <h1>Loan Review</h1>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading()" class="loading">Loading loan details...</div>
+
+    <!-- Content -->
+    <div *ngIf="!loading() && loan()" class="content">
+        <!-- Loan Overview -->
+        <div class="section loan-overview">
+            <div class="overview-header">
+                <div>
+                    <h2>Loan #{{ loan()!.loanId }}</h2>
+                    <span class="loan-type">{{ loanUtils.getLoanTypeDisplay(loan()!.type) }}</span>
+                </div>
+                <span class="status-badge" [class]="'status-' + loan()!.status.toLowerCase()">
+                    {{ loanUtils.getStatusDisplay(loan()!.status) }}
+                </span>
+            </div>
+            <div class="overview-stats">
+                <div class="stat">
+                    <span class="stat-label">Amount Requested</span>
+                    <span class="stat-value">₹{{ loan()!.amountRequested | number }}</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Tenure</span>
+                    <span class="stat-value">{{ loan()!.tenureMonths }} months</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Applied On</span>
+                    <span class="stat-value">{{ loan()!.appliedOn | date:'mediumDate' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-columns">
+            <!-- Left Column: Details -->
+            <div class="left-column">
+                <!-- Credit Assessment -->
+                <div class="section">
+                    <h3>Credit Assessment</h3>
+                    <div class="credit-info">
+                        <div class="credit-score-display" [class]="getCreditScoreClass(loan()!.creditScore || 0)">
+                            <span class="score">{{ loan()!.creditScore || 'N/A' }}</span>
+                            <span class="label" *ngIf="loan()!.creditScore">{{ getCreditScoreLabel(loan()!.creditScore!)
+                                }}</span>
+                        </div>
+                        <div class="risk-category" *ngIf="loan()!.riskCategory">
+                            <span class="risk-label">Risk Category</span>
+                            <span class="risk-value" [class]="getRiskClass(loan()!.riskCategory!)">
+                                {{ loan()!.riskCategory }}
+                            </span>
+                        </div>
+                    </div>
+                    <p *ngIf="!loan()!.creditScore" class="no-credit">Credit check not performed yet</p>
+                </div>
+
+                <!-- Applicant Details -->
+                <div class="section">
+                    <h3>Applicant Details</h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="label">User ID</span>
+                            <span class="value">{{ loan()!.userId }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Purpose</span>
+                            <span class="value">{{ loan()!.purpose || 'Not specified' }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Employment</span>
+                            <span class="value">{{ loan()!.employmentType || 'N/A' }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Monthly Income</span>
+                            <span class="value">₹{{ loan()!.monthlyIncome | number }}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="loan()!.annualIncome">
+                            <span class="label">Annual Income</span>
+                            <span class="value">₹{{ loan()!.annualIncome | number }}</span>
+                        </div>
+                        <div class="detail-item" *ngIf="loan()!.employerName">
+                            <span class="label">Employer</span>
+                            <span class="value">{{ loan()!.employerName }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Previous Remarks -->
+                <div class="section" *ngIf="loan()!.remarks">
+                    <h3>Remarks</h3>
+                    <p class="remarks">{{ loan()!.remarks }}</p>
+                </div>
+            </div>
+
+            <!-- Right Column: Actions -->
+            <div class="right-column">
+                <!-- Action Tabs -->
+                <div class="action-tabs">
+                    <button [class.active]="activeTab() === 'approve'" (click)="activeTab.set('approve')">
+                        ✓ Approve
+                    </button>
+                    <button [class.active]="activeTab() === 'reject'" (click)="activeTab.set('reject')">
+                        ✗ Reject
+                    </button>
+                </div>
+
+                <!-- Approve Form -->
+                <div *ngIf="activeTab() === 'approve'" class="action-form">
+                    <form [formGroup]="approveForm" (ngSubmit)="approveLoan()">
+                        <div class="form-group">
+                            <label>Approved Amount (₹)</label>
+                            <input type="number" formControlName="approvedAmount" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Interest Rate (%)</label>
+                            <input type="number" formControlName="interestRate" step="0.1" class="form-input">
+                            <small class="hint">Range: {{ getRateRange().min }}% - {{ getRateRange().max }}%</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tenure (months)</label>
+                            <input type="number" formControlName="tenure" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Remarks (optional)</label>
+                            <textarea formControlName="remarks" class="form-input" rows="2"></textarea>
+                        </div>
+
+                        <!-- EMI Preview -->
+                        <div class="emi-preview" *ngIf="emiPreview()">
+                            <h4>EMI Preview</h4>
+                            <div class="emi-grid">
+                                <div class="emi-item">
+                                    <span class="emi-label">Monthly EMI</span>
+                                    <span class="emi-value primary">₹{{ emiPreview()!.monthlyEmi | number }}</span>
+                                </div>
+                                <div class="emi-item">
+                                    <span class="emi-label">Total Interest</span>
+                                    <span class="emi-value">₹{{ emiPreview()!.totalInterest | number }}</span>
+                                </div>
+                                <div class="emi-item">
+                                    <span class="emi-label">Total Payment</span>
+                                    <span class="emi-value">₹{{ emiPreview()!.totalPayment | number }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-approve" [disabled]="approveForm.invalid || processing()">
+                            {{ processing() ? 'Processing...' : 'Approve Loan' }}
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Reject Form -->
+                <div *ngIf="activeTab() === 'reject'" class="action-form">
+                    <form [formGroup]="rejectForm" (ngSubmit)="rejectLoan()">
+                        <div class="form-group">
+                            <label>Rejection Reason *</label>
+                            <textarea formControlName="reason" class="form-input" rows="4"
+                                placeholder="Provide reason for rejection..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-reject" [disabled]="rejectForm.invalid || processing()">
+                            {{ processing() ? 'Processing...' : 'Reject Loan' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

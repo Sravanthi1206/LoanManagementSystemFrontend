@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OfficerApiService } from '../../services/officer-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
@@ -15,6 +16,7 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
 })
 export class OfficerDashboardComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private router = inject(Router);
   private officerApi = inject(OfficerApiService);
   private authState = inject(AuthStateService);
   protected loanUtils = inject(LoanUtilsService);
@@ -297,5 +299,9 @@ export class OfficerDashboardComponent implements OnInit {
         this.showToast(err.message || 'Disbursement failed', 'error');
       }
     });
+  }
+
+  goToLoanReview(loanId: number): void {
+    this.router.navigate(['/officer/loans', loanId]);
   }
 }

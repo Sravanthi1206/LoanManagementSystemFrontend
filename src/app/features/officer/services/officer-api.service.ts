@@ -32,6 +32,10 @@ export class OfficerApiService {
     return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/admin`, { params });
   }
 
+  getLoanById(loanId: number): Observable<Loan> {
+    return this.http.get<Loan>(`${this.apiUrl}/loans/${loanId}`);
+  }
+
   getPendingLoans(page: number = 0, size: number = 10): Observable<PageResponse<Loan>> {
     const params = new HttpParams()
       .set('page', page.toString())
