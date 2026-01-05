@@ -107,6 +107,11 @@ import { CreateServiceRequestComponent } from '../../containers/create-service-r
                                 (click)="viewLoanDetails(loan)">
                           View
                         </button>
+                        <button *ngIf="loan.status === 'DISBURSED'" 
+                                class="btn btn-sm btn-outline-success me-2"
+                                (click)="viewEmiSchedule(loan)">
+                          EMI Schedule
+                        </button>
                         <button *ngIf="loan.status === 'APPLIED'" 
                                 class="btn btn-sm btn-outline-danger"
                                 (click)="showWithdrawConfirm(loan)">
@@ -209,6 +214,62 @@ import { CreateServiceRequestComponent } from '../../containers/create-service-r
       </div>
     </div>
 
+    <!-- EMI Schedule Modal -->
+    <div class="modal-overlay" *ngIf="showScheduleModal()" (click)="showScheduleModal.set(false)">
+      <div class="modal-dialog modal-xl" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">EMI Schedule - Loan #{{ scheduleLoanId() }}</h5>
+            <button type="button" class="btn-close" (click)="showScheduleModal.set(false)">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div *ngIf="loadingSchedule()" class="text-center py-4">
+              <div class="spinner-border text-primary"></div>
+              <p class="mt-2">Loading schedule...</p>
+            </div>
+
+            <div *ngIf="!loadingSchedule() && emiSchedule().length === 0" class="text-center py-4">
+              <p class="text-muted">No EMI schedule found</p>
+            </div>
+
+            <div *ngIf="!loadingSchedule() && emiSchedule().length > 0" class="table-responsive">
+              <table class="table table-striped">
+                <thead class="table-dark">
+                  <tr>
+                    <th>#</th>
+                    <th>Due Date</th>
+                    <th>Principal</th>
+                    <th>Interest</th>
+                    <th>Total EMI</th>
+                    <th>Status</th>
+                    <th>Paid Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let emi of emiSchedule()">
+                    <td>{{ emi.installmentNo }}</td>
+                    <td>{{ emi.dueDate | date: 'mediumDate' }}</td>
+                    <td>₹{{ emi.principalAmount | number:'1.2-2' }}</td>
+                    <td>₹{{ emi.interestAmount | number:'1.2-2' }}</td>
+                    <td><strong>₹{{ emi.totalEmi | number:'1.2-2' }}</strong></td>
+                    <td>
+                      <span [class]="'badge ' + getStatusBadgeClass(emi.status)">
+                        {{ emi.status }}
+                      </span>
+                    </td>
+                    <td>{{ emi.paidDate ? (emi.paidDate | date: 'shortDate') : '-' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="showScheduleModal.set(false)">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Withdraw Confirmation Modal -->
     <div class="modal-overlay" *ngIf="loanToWithdraw()" (click)="loanToWithdraw.set(null)">
       <div class="modal-dialog" (click)="$event.stopPropagation()">
@@ -304,6 +365,9 @@ import { CreateServiceRequestComponent } from '../../containers/create-service-r
       background: white;
       border-radius: 12px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
     }
     .modal-header {
       padding: 1.25rem 1.5rem;
@@ -311,9 +375,15 @@ import { CreateServiceRequestComponent } from '../../containers/create-service-r
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-shrink: 0;
     }
     .modal-body {
       padding: 1.5rem;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    .modal-xl {
+      max-width: 900px;
     }
     .modal-footer {
       padding: 1rem 1.5rem;
@@ -366,6 +436,12 @@ export class CustomerDashboardComponent implements OnInit {
   selectedLoan = signal<Loan | null>(null);
   loanToWithdraw = signal<Loan | null>(null);
   emiToPay = signal<EmiSchedule | null>(null);
+
+  // EMI Schedule modal
+  showScheduleModal = signal(false);
+  emiSchedule = signal<EmiSchedule[]>([]);
+  scheduleLoanId = signal<number | null>(null);
+  loadingSchedule = signal(false);
 
   // Loading states
   withdrawing = signal(false);
@@ -466,6 +542,24 @@ export class CustomerDashboardComponent implements OnInit {
 
   viewLoanDetails(loan: Loan): void {
     this.selectedLoan.set(loan);
+  }
+
+  viewEmiSchedule(loan: Loan): void {
+    this.scheduleLoanId.set(loan.loanId);
+    this.loadingSchedule.set(true);
+    this.showScheduleModal.set(true);
+    this.emiSchedule.set([]);
+
+    this.loanApi.getEmiSchedule(loan.loanId).subscribe({
+      next: (schedule) => {
+        this.emiSchedule.set(schedule);
+        this.loadingSchedule.set(false);
+      },
+      error: () => {
+        this.loadingSchedule.set(false);
+        this.showToast('Failed to load EMI schedule', 'error');
+      }
+    });
   }
 
   showWithdrawConfirm(loan: Loan): void {
