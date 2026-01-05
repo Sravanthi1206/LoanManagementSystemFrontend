@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AdminApiService } from '../../services/admin-api.service';
 import { LoanUtilsService } from '../../../../shared/services/loan-utils.service';
 import { User, Loan } from '../../../../shared/types/models';
@@ -8,7 +8,7 @@ import { User, Loan } from '../../../../shared/types/models';
 @Component({
     selector: 'app-user-details',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule],
     templateUrl: './user-details.component.html',
     styleUrl: './user-details.component.css'
 })

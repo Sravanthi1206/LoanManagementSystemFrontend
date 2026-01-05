@@ -47,7 +47,8 @@
                             </div>
                             <div class="info-row">
                                 <span class="label">Date of Birth:</span>
-                                <span class="value">{{ user()?.dateOfBirth | date:'mediumDate' || 'N/A' }}</span>
+                                <span class="value">{{ user()?.dateOfBirth ? (user()?.dateOfBirth | date:'mediumDate') :
+                                    'N/A' }}</span>
                             </div>
                             <div class="info-row">
                                 <span class="label">PAN Card:</span>
