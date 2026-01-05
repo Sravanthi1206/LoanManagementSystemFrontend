@@ -32,13 +32,13 @@
                         <div class="mb-3">
                             <label class="form-label">Loan Type <span class="text-danger">*</span></label>
                             <select class="form-control" formControlName="type"
-                                [class.is-invalid]="isFieldInvalid('type')">
+                                [class.is-invalid]="isFieldInvalid('type')" (change)="onLoanTypeChange()">
                                 <option value="">Select loan type</option>
-                                <option value="HOME">Home Loan</option>
-                                <option value="PERSONAL">Personal Loan</option>
-                                <option value="VEHICLE">Vehicle Loan</option>
-                                <option value="EDUCATION">Education Loan</option>
-                                <option value="BUSINESS">Business Loan</option>
+                                <option value="HOME">Home Loan (₹5L - ₹1Cr)</option>
+                                <option value="PERSONAL">Personal Loan (₹50K - ₹10L)</option>
+                                <option value="VEHICLE">Vehicle Loan (₹1L - ₹50L)</option>
+                                <option value="EDUCATION">Education Loan (₹1L - ₹30L)</option>
+                                <option value="BUSINESS">Business Loan (₹2L - ₹50L)</option>
                             </select>
                             <div class="invalid-feedback" *ngIf="isFieldInvalid('type')">
                                 Please select a loan type
@@ -49,12 +49,18 @@
                         <div class="mb-3">
                             <label class="form-label">Loan Amount (₹) <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" formControlName="amount"
-                                placeholder="Minimum ₹10,000" [class.is-invalid]="isFieldInvalid('amount')">
+                                [placeholder]="'₹' + (currentRange().min | number) + ' - ₹' + (currentRange().max | number)"
+                                [class.is-invalid]="isFieldInvalid('amount')">
+                            <small class="text-muted" *ngIf="loanForm.get('type')?.value">
+                                Range: ₹{{ currentRange().min | number }} - ₹{{ currentRange().max | number }}
+                            </small>
                             <div class="invalid-feedback" *ngIf="isFieldInvalid('amount')">
                                 <span *ngIf="loanForm.get('amount')?.errors?.['required']">Please enter the loan
                                     amount</span>
-                                <span *ngIf="loanForm.get('amount')?.errors?.['min']">Minimum loan amount is
-                                    ₹10,000</span>
+                                <span *ngIf="loanForm.get('amount')?.errors?.['min']">Minimum: ₹{{ currentRange().min |
+                                    number }}</span>
+                                <span *ngIf="loanForm.get('amount')?.errors?.['max']">Maximum: ₹{{ currentRange().max |
+                                    number }}</span>
                             </div>
                         </div>
 

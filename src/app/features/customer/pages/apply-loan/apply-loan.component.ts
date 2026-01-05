@@ -27,6 +27,17 @@ export class ApplyLoanComponent {
 
     loanForm: FormGroup;
 
+    // Loan amount ranges per type
+    loanRanges: { [key: string]: { min: number; max: number } } = {
+        'HOME': { min: 500000, max: 10000000 },
+        'PERSONAL': { min: 50000, max: 1000000 },
+        'VEHICLE': { min: 100000, max: 5000000 },
+        'EDUCATION': { min: 100000, max: 3000000 },
+        'BUSINESS': { min: 200000, max: 5000000 }
+    };
+
+    currentRange = signal({ min: 10000, max: 10000000 });
+
     constructor() {
         this.loanForm = this.fb.group({
             type: ['', Validators.required],
@@ -51,6 +62,21 @@ export class ApplyLoanComponent {
         if (!user.dateOfBirth || !user.panCard) {
             this.profileIncomplete.set(true);
             this.errorMessage.set('Please update your profile with Date of Birth and PAN Card before applying for a loan.');
+        }
+    }
+
+    onLoanTypeChange(): void {
+        const type = this.loanForm.get('type')?.value;
+        if (type && this.loanRanges[type]) {
+            const range = this.loanRanges[type];
+            this.currentRange.set(range);
+            // Update amount validators with new range
+            this.loanForm.get('amount')?.setValidators([
+                Validators.required,
+                Validators.min(range.min),
+                Validators.max(range.max)
+            ]);
+            this.loanForm.get('amount')?.updateValueAndValidity();
         }
     }
 
