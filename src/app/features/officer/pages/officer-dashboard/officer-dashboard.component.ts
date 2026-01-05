@@ -39,10 +39,22 @@ export class OfficerDashboardComponent implements OnInit {
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
 
+  // Interest rate ranges per loan type
+  interestRateRanges: { [key: string]: { min: number; max: number; default: number } } = {
+    'HOME': { min: 7.5, max: 12.0, default: 8.5 },
+    'PERSONAL': { min: 10.0, max: 18.0, default: 12.0 },
+    'VEHICLE': { min: 8.0, max: 14.0, default: 9.5 },
+    'EDUCATION': { min: 8.0, max: 13.0, default: 10.0 },
+    'BUSINESS': { min: 9.0, max: 16.0, default: 11.0 }
+  };
+
+  currentRateRange = signal({ min: 0.1, max: 30 });
+  emiPreview = signal<{ monthlyEmi: number; totalInterest: number; totalPayment: number } | null>(null);
+
   constructor() {
     this.approveForm = this.fb.group({
       approvedAmount: [0, [Validators.required, Validators.min(1)]],
-      interestRate: [0, [Validators.required, Validators.min(0.1)]],
+      interestRate: [0, [Validators.required, Validators.min(0.1), Validators.max(30)]],
       approvalRemarks: ['']
     });
 
@@ -158,12 +170,49 @@ export class OfficerDashboardComponent implements OnInit {
   }
 
   showApproveModal(loan: Loan): void {
+    const rateRange = this.interestRateRanges[loan.type] || { min: 5, max: 20, default: 10 };
+    this.currentRateRange.set({ min: rateRange.min, max: rateRange.max });
+
+    // Set validators with range
+    this.approveForm.get('interestRate')?.setValidators([
+      Validators.required,
+      Validators.min(rateRange.min),
+      Validators.max(rateRange.max)
+    ]);
+    this.approveForm.get('interestRate')?.updateValueAndValidity();
+
     this.approveForm.patchValue({
       approvedAmount: loan.amountRequested,
-      interestRate: 10.5,
+      interestRate: rateRange.default,
       approvalRemarks: ''
     });
     this.approveLoan.set(loan);
+    this.calculateEmiPreview();
+  }
+
+  calculateEmiPreview(): void {
+    const loan = this.approveLoan();
+    if (!loan) return;
+
+    const amount = this.approveForm.get('approvedAmount')?.value || 0;
+    const rate = this.approveForm.get('interestRate')?.value || 0;
+    const tenure = loan.tenureMonths || 12;
+
+    if (amount > 0 && rate > 0 && tenure > 0) {
+      const monthlyRate = rate / 12 / 100;
+      const emi = (amount * monthlyRate * Math.pow(1 + monthlyRate, tenure)) /
+        (Math.pow(1 + monthlyRate, tenure) - 1);
+      const totalPayment = emi * tenure;
+      const totalInterest = totalPayment - amount;
+
+      this.emiPreview.set({
+        monthlyEmi: Math.round(emi),
+        totalInterest: Math.round(totalInterest),
+        totalPayment: Math.round(totalPayment)
+      });
+    } else {
+      this.emiPreview.set(null);
+    }
   }
 
   confirmApprove(): void {

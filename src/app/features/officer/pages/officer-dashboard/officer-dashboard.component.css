@@ -1,5 +1,4 @@
-/* Officer Dashboard - Minimal Component-Specific Styles */
-/* Most styles inherited from global styles.css */
+/* Officer Dashboard Styles */
 
 .alert-info {
     background-color: #e3f2fd;
@@ -7,4 +6,26 @@
     color: #1565c0;
     padding: 1rem;
     border-radius: 6px;
+}
+
+/* EMI Preview */
+.emi-preview-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.emi-preview-item:last-child {
+    border-bottom: none;
+}
+
+.emi-preview-item .label {
+    font-weight: 500;
+    color: #666;
+}
+
+.emi-preview-item .value {
+    font-weight: 600;
+    color: #333;
 }

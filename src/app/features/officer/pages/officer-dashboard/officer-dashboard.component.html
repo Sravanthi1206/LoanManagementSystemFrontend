@@ -322,7 +322,7 @@
 
 <!-- Approve Modal -->
 <div class="modal-overlay" *ngIf="approveLoan()" (click)="approveLoan.set(null)">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Approve Loan #{{ approveLoan()?.loanId }}</h5>
@@ -330,27 +330,65 @@
             </div>
             <form [formGroup]="approveForm">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Approved Amount (₹)</label>
-                        <input type="number" class="form-control" formControlName="approvedAmount"
-                            [placeholder]="approveLoan()?.amountRequested">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Interest Rate (%)</label>
-                        <input type="number" class="form-control" formControlName="interestRate" step="0.1"
-                            placeholder="e.g., 10.5">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Remarks</label>
-                        <textarea class="form-control" formControlName="approvalRemarks" rows="2"
-                            placeholder="Optional remarks"></textarea>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Approved Amount (₹)</label>
+                                <input type="number" class="form-control" formControlName="approvedAmount"
+                                    [placeholder]="approveLoan()?.amountRequested" (input)="calculateEmiPreview()">
+                                <small class="text-muted">Requested: ₹{{ approveLoan()?.amountRequested | number
+                                    }}</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Interest Rate (%)</label>
+                                <input type="number" class="form-control" formControlName="interestRate" step="0.1"
+                                    [min]="currentRateRange().min" [max]="currentRateRange().max"
+                                    (input)="calculateEmiPreview()">
+                                <small class="text-muted">
+                                    Range: {{ currentRateRange().min }}% - {{ currentRateRange().max }}%
+                                </small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Remarks</label>
+                                <textarea class="form-control" formControlName="approvalRemarks" rows="2"
+                                    placeholder="Optional remarks"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <strong>EMI Preview</strong>
+                                </div>
+                                <div class="card-body" *ngIf="emiPreview()">
+                                    <div class="emi-preview-item">
+                                        <span class="label">Monthly EMI</span>
+                                        <span class="value text-primary">₹{{ emiPreview()!.monthlyEmi | number }}</span>
+                                    </div>
+                                    <div class="emi-preview-item">
+                                        <span class="label">Total Interest</span>
+                                        <span class="value">₹{{ emiPreview()!.totalInterest | number }}</span>
+                                    </div>
+                                    <div class="emi-preview-item">
+                                        <span class="label">Total Payment</span>
+                                        <span class="value">₹{{ emiPreview()!.totalPayment | number }}</span>
+                                    </div>
+                                    <div class="emi-preview-item">
+                                        <span class="label">Tenure</span>
+                                        <span class="value">{{ approveLoan()?.tenureMonths }} months</span>
+                                    </div>
+                                </div>
+                                <div class="card-body text-muted" *ngIf="!emiPreview()">
+                                    Enter amount and rate to see EMI preview
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" (click)="approveLoan.set(null)">Cancel</button>
                     <button type="button" class="btn btn-success" (click)="confirmApprove()"
                         [disabled]="approveForm.invalid || processing()">
-                        <span *ngIf="!processing()">Approve</span>
+                        <span *ngIf="!processing()">Approve Loan</span>
                         <span *ngIf="processing()"><span
                                 class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
                     </button>
