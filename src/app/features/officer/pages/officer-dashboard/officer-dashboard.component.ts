@@ -531,9 +531,6 @@ export class OfficerDashboardComponent implements OnInit {
     });
   }
 
-  // showCreditCheckModal is no longer needed for manual input
-  // We can rename confirmCreditCheck to runCreditCheck or keep it
-
   runCreditCheck(loan: Loan): void {
     if (!loan) return;
     this.creditCheckLoan.set(loan);
@@ -544,7 +541,6 @@ export class OfficerDashboardComponent implements OnInit {
     if (!loan) return;
 
     this.processing.set(true);
-    // Pass null/0 for score to trigger backend automation
     this.officerApi.performCreditCheck(loan.loanId, 0, 'Automated Credit Check').subscribe({
       next: () => {
         this.processing.set(false);

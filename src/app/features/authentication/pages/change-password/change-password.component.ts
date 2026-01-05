@@ -145,11 +145,6 @@ export class ChangePasswordComponent {
       }).subscribe({
         next: () => {
           this.loading = false;
-          // Logout to force re-login or just redirect?
-          // Since we updated password, maybe token is still valid but password hash changed.
-          // Ideally we redirect to dashboard.
-          // But we should update user state locally to remove passwordChangeRequired!
-          // Or just trust the backend doesn't enforce it anymore on subsequent requests (it doesn't checks token).
           // Update local user state
           const updatedUser = { ...user, passwordChangeRequired: false };
           const token = this.authState.getToken();

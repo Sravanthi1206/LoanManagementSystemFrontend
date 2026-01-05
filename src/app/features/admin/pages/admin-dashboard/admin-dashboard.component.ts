@@ -369,7 +369,7 @@ import { User, DashboardStats } from '../../../../shared/types/models';
   `]
 })
 export class AdminDashboardComponent implements OnInit {
-  protected Math = Math; // Make Math available to template
+  protected Math = Math;
   private adminApi = inject(AdminApiService);
   private authState = inject(AuthStateService);
 

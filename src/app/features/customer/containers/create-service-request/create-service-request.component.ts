@@ -344,7 +344,6 @@ export class CreateServiceRequestComponent {
     const request = {
       userId: user.id,
       ...formValue,
-      // Auto-calculate annual income from monthly income (required by backend)
       annualIncome: formValue.monthlyIncome * 12
     };
 
