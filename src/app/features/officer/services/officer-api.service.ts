@@ -73,4 +73,8 @@ export class OfficerApiService {
   rejectLoan(loanId: number, remarks: string): Observable<Loan> {
     return this.http.put<Loan>(`${this.apiUrl}/loans/admin/${loanId}/reject`, { remarks });
   }
+
+  disburseLoan(loanId: number): Observable<Loan> {
+    return this.http.put<Loan>(`${this.apiUrl}/loans/admin/${loanId}/disburse`, {});
+  }
 }

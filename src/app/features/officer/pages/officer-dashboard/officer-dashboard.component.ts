@@ -211,6 +211,11 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
                       <td>₹{{ loan.amountApproved | number }}</td>
                       <td>{{ loan.approvedOn | date: 'shortDate' }}</td>
                       <td>
+                        <button class="btn btn-sm btn-success me-1"
+                                (click)="showDisburseModal(loan)"
+                                [disabled]="processing()">
+                          Disburse
+                        </button>
                         <button class="btn btn-sm btn-outline-info"
                                 (click)="viewDetails(loan)">
                           Details
@@ -311,6 +316,34 @@ import { Loan, DashboardStats } from '../../../../shared/types/models';
             <button type="button" class="btn btn-secondary" (click)="approveLoan.set(null)">Cancel</button>
             <button type="button" class="btn btn-success" (click)="confirmApprove()" [disabled]="!approvedAmount || !interestRate || processing()">
               <span *ngIf="!processing()">Approve</span>
+              <span *ngIf="processing()"><span class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disburse Confirmation Modal -->
+    <div class="modal-overlay" *ngIf="disburseLoan()" (click)="disburseLoan.set(null)">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Disbursement</h5>
+            <button type="button" class="btn-close" (click)="disburseLoan.set(null)">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p>Are you ready to disburse Loan <strong>#{{ disburseLoan()?.loanId }}</strong>?</p>
+            <div class="alert alert-info">
+              <strong>Amount:</strong> ₹{{ disburseLoan()?.amountApproved | number }}<br>
+              <strong>Interest Rate:</strong> {{ disburseLoan()?.interestRate }}%<br>
+              <strong>Tenure:</strong> {{ disburseLoan()?.tenureMonths }} months
+            </div>
+            <p class="text-muted small">This will transfer funds to the customer and generate the EMI schedule.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="disburseLoan.set(null)">Cancel</button>
+            <button type="button" class="btn btn-success" (click)="confirmDisburse()" [disabled]="processing()">
+              <span *ngIf="!processing()">Confirm Disbursement</span>
               <span *ngIf="processing()"><span class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
             </button>
           </div>
@@ -442,6 +475,7 @@ export class OfficerDashboardComponent implements OnInit {
   creditCheckLoan = signal<Loan | null>(null);
   approveLoan = signal<Loan | null>(null);
   rejectLoan = signal<Loan | null>(null);
+  disburseLoan = signal<Loan | null>(null);
 
   // Form fields
   creditScore = 0;
@@ -605,6 +639,29 @@ export class OfficerDashboardComponent implements OnInit {
       error: (err) => {
         this.processing.set(false);
         this.showToast(err.message || 'Rejection failed', 'error');
+      }
+    });
+  }
+
+  showDisburseModal(loan: Loan): void {
+    this.disburseLoan.set(loan);
+  }
+
+  confirmDisburse(): void {
+    const loan = this.disburseLoan();
+    if (!loan) return;
+
+    this.processing.set(true);
+    this.officerApi.disburseLoan(loan.loanId).subscribe({
+      next: () => {
+        this.processing.set(false);
+        this.disburseLoan.set(null);
+        this.showToast('Loan disbursed successfully! EMI schedule has been generated.');
+        this.loadDashboardData();
+      },
+      error: (err) => {
+        this.processing.set(false);
+        this.showToast(err.message || 'Disbursement failed', 'error');
       }
     });
   }
