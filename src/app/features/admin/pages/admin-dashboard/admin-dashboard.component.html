@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    <!-- Loan Distribution Charts -->
+    <!-- Loan Distribution Pie Charts -->
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card">
@@ -56,17 +56,18 @@
                     <h5 class="mb-0">Loans by Type</h5>
                 </div>
                 <div class="card-body">
-                    <div *ngIf="loansByType()" class="chart-container">
-                        <div *ngFor="let type of getLoanTypes()" class="chart-bar-item">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="chart-label">{{ loanUtils.getLoanTypeDisplay(type) }}</span>
-                                <span class="chart-value">{{ loansByType()![type] || 0 }}</span>
+                    <div class="pie-chart-container">
+                        <div class="pie-chart" [style.background]="getTypePieGradient()">
+                            <div class="pie-center">
+                                <span class="pie-total">{{ getTotalLoans() }}</span>
+                                <span class="pie-label">Total</span>
                             </div>
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar" [style.width.%]="getPercentage(loansByType()![type] || 0)"
-                                    [style.background-color]="getLoanTypeColor(type)">
-                                    {{ getPercentage(loansByType()![type] || 0) | number:'1.0-0' }}%
-                                </div>
+                        </div>
+                        <div class="pie-legend">
+                            <div *ngFor="let type of getLoanTypes()" class="legend-item">
+                                <span class="legend-color" [style.background-color]="getLoanTypeColor(type)"></span>
+                                <span class="legend-text">{{ loanUtils.getLoanTypeDisplay(type) }}</span>
+                                <span class="legend-value">{{ loansByType()?.[type] || 0 }}</span>
                             </div>
                         </div>
                     </div>
@@ -79,16 +80,18 @@
                     <h5 class="mb-0">Loans by Status</h5>
                 </div>
                 <div class="card-body">
-                    <div *ngIf="loansByStatus()" class="chart-container">
-                        <div *ngFor="let status of getLoanStatuses()" class="chart-bar-item">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="chart-label">{{ loanUtils.getStatusDisplay(status) }}</span>
-                                <span class="chart-value">{{ loansByStatus()![status] || 0 }}</span>
+                    <div class="pie-chart-container">
+                        <div class="pie-chart" [style.background]="getStatusPieGradient()">
+                            <div class="pie-center">
+                                <span class="pie-total">{{ getTotalLoans() }}</span>
+                                <span class="pie-label">Total</span>
                             </div>
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar" [style.width.%]="getPercentage(loansByStatus()![status] || 0)"
-                                    [style.background-color]="getStatusColor(status)">
-                                </div>
+                        </div>
+                        <div class="pie-legend">
+                            <div *ngFor="let status of getLoanStatuses()" class="legend-item">
+                                <span class="legend-color" [style.background-color]="getStatusColor(status)"></span>
+                                <span class="legend-text">{{ loanUtils.getStatusDisplay(status) }}</span>
+                                <span class="legend-value">{{ loansByStatus()?.[status] || 0 }}</span>
                             </div>
                         </div>
                     </div>

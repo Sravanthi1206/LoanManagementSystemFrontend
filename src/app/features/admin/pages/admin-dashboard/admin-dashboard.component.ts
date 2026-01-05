@@ -246,26 +246,83 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+  // Vibrant color palette optimized for pie charts
+  typeColors: { [key: string]: string } = {
+    'HOME': '#4F46E5',       // Indigo
+    'PERSONAL': '#059669',   // Emerald (darker)
+    'VEHICLE': '#EA580C',    // Orange
+    'EDUCATION': '#7C3AED',  // Purple
+    'BUSINESS': '#DB2777'    // Pink
+  };
+
+  statusColors: { [key: string]: string } = {
+    'APPLIED': '#0EA5E9',    // Sky Blue
+    'UNDER_REVIEW': '#F59E0B', // Amber
+    'APPROVED': '#10B981',   // Emerald
+    'REJECTED': '#DC2626',   // Red
+    'DISBURSED': '#8B5CF6',  // Violet
+    'CLOSED': '#64748B'      // Slate
+  };
+
   getStatusColor(status: string): string {
-    const colors: { [key: string]: string } = {
-      'APPLIED': '#17a2b8',
-      'UNDER_REVIEW': '#ffc107',
-      'APPROVED': '#28a745',
-      'REJECTED': '#dc3545',
-      'DISBURSED': '#6610f2',
-      'CLOSED': '#6c757d'
-    };
-    return colors[status] || '#333';
+    return this.statusColors[status] || '#6B7280';
   }
 
   getLoanTypeColor(type: string): string {
-    const colors: { [key: string]: string } = {
-      'HOME': '#0d6efd',
-      'PERSONAL': '#198754',
-      'VEHICLE': '#fd7e14',
-      'EDUCATION': '#6f42c1',
-      'BUSINESS': '#d63384'
-    };
-    return colors[type] || '#333';
+    return this.typeColors[type] || '#6B7280';
+  }
+
+  // Generate conic-gradient for pie chart by type
+  getTypePieGradient(): string {
+    const data = this.loansByType();
+    if (!data) return 'conic-gradient(#e5e7eb 0deg 360deg)';
+
+    const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+    if (total === 0) return 'conic-gradient(#e5e7eb 0deg 360deg)';
+
+    let gradient = 'conic-gradient(';
+    let currentAngle = 0;
+
+    const types = this.getLoanTypes();
+    types.forEach((type, index) => {
+      const value = data[type] || 0;
+      const angle = (value / total) * 360;
+      const color = this.typeColors[type] || '#6B7280';
+
+      gradient += `${color} ${currentAngle}deg ${currentAngle + angle}deg`;
+      currentAngle += angle;
+
+      if (index < types.length - 1) gradient += ', ';
+    });
+
+    gradient += ')';
+    return gradient;
+  }
+
+  // Generate conic-gradient for pie chart by status
+  getStatusPieGradient(): string {
+    const data = this.loansByStatus();
+    if (!data) return 'conic-gradient(#e5e7eb 0deg 360deg)';
+
+    const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+    if (total === 0) return 'conic-gradient(#e5e7eb 0deg 360deg)';
+
+    let gradient = 'conic-gradient(';
+    let currentAngle = 0;
+
+    const statuses = this.getLoanStatuses();
+    statuses.forEach((status, index) => {
+      const value = data[status] || 0;
+      const angle = (value / total) * 360;
+      const color = this.statusColors[status] || '#6B7280';
+
+      gradient += `${color} ${currentAngle}deg ${currentAngle + angle}deg`;
+      currentAngle += angle;
+
+      if (index < statuses.length - 1) gradient += ', ';
+    });
+
+    gradient += ')';
+    return gradient;
   }
 }
