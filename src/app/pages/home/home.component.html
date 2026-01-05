@@ -1,0 +1,172 @@
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>Your Trusted Partner for <span class="gradient-text">Financial Solutions</span></h1>
+            <p class="hero-subtitle">Compare loans, get instant approvals, and manage your finances with India's leading
+                loan management platform.</p>
+            <div class="hero-cta">
+                <a *ngIf="!isLoggedIn()" routerLink="/auth/register" class="btn btn-primary btn-lg">Get Started</a>
+                <a *ngIf="isLoggedIn()" [routerLink]="getDashboardLink()" class="btn btn-primary btn-lg">Go to
+                    Dashboard</a>
+                <a routerLink="/auth/login" class="btn btn-outline-light btn-lg" *ngIf="!isLoggedIn()">Login</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item" *ngFor="let stat of stats">
+                    <span class="stat-value">{{ stat.value }}</span>
+                    <span class="stat-label">{{ stat.label }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="illustration">
+                <div class="floating-card card-1">
+                    <span class="card-icon">✓</span>
+                    <span>Loan Approved!</span>
+                </div>
+                <div class="floating-card card-2">
+                    <span class="card-icon">💰</span>
+                    <span>₹5,00,000</span>
+                </div>
+                <div class="floating-card card-3">
+                    <span class="card-icon">📊</span>
+                    <span>Credit Score: 780</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Loan Products Section -->
+<section class="loan-products">
+    <div class="container">
+        <div class="section-header">
+            <h2>Choose Your <span class="gradient-text">Perfect Loan</span></h2>
+            <p>We offer a wide range of loan products tailored to your needs</p>
+        </div>
+        <div class="products-grid">
+            <div class="product-card" *ngFor="let product of loanProducts">
+                <div class="product-icon">{{ product.icon }}</div>
+                <h3>{{ product.title }}</h3>
+                <p class="product-description">{{ product.description }}</p>
+                <div class="product-details">
+                    <div class="detail">
+                        <span class="detail-label">Starting at</span>
+                        <span class="detail-value rate">{{ product.rate }}</span>
+                    </div>
+                    <div class="detail">
+                        <span class="detail-label">Up to</span>
+                        <span class="detail-value">{{ product.maxAmount }}</span>
+                    </div>
+                </div>
+                <a routerLink="/auth/register" class="btn btn-outline-primary">Apply Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <div class="section-header">
+            <h2>Why Choose <span class="gradient-text">LoanHub</span>?</h2>
+            <p>Experience the difference with our customer-first approach</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card" *ngFor="let feature of features">
+                <div class="feature-icon">{{ feature.icon }}</div>
+                <h3>{{ feature.title }}</h3>
+                <p>{{ feature.description }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="section-header">
+            <h2>How It <span class="gradient-text">Works</span></h2>
+            <p>Get your loan in 4 simple steps</p>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Register</h3>
+                <p>Create your account in minutes</p>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Apply</h3>
+                <p>Fill the loan application form</p>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Get Approved</h3>
+                <p>Quick verification & approval</p>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Receive Funds</h3>
+                <p>Money disbursed to your account</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to Get Started?</h2>
+            <p>Join thousands of customers who trust us with their financial needs</p>
+            <div class="cta-buttons">
+                <a routerLink="/auth/register" class="btn btn-light btn-lg">Create Account</a>
+                <a routerLink="/auth/login" class="btn btn-outline-light btn-lg">Login</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3>💳 LoanHub</h3>
+                <p>Your trusted partner for all financial solutions. We make borrowing simple, transparent, and
+                    accessible.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a routerLink="/auth/login">Login</a></li>
+                    <li><a routerLink="/auth/register">Register</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Loan Types</h4>
+                <ul>
+                    <li><a href="#">Home Loan</a></li>
+                    <li><a href="#">Personal Loan</a></li>
+                    <li><a href="#">Vehicle Loan</a></li>
+                    <li><a href="#">Business Loan</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Contact</h4>
+                <ul>
+                    <li>📧 support&#64;loanhub.com</li>
+                    <li>📞 1800-XXX-XXXX</li>
+                    <li>📍 Hyderabad, India</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 LoanHub. All rights reserved.</p>
+        </div>
+    </div>
+</footer>

@@ -5,8 +5,8 @@ import { roleGuard } from './guards/role.guard';
 export const routes: Routes = [
     {
         path: '',
-        redirectTo: '/auth/login',
-        pathMatch: 'full'
+        loadComponent: () => import('./pages/home/home.component')
+            .then(m => m.HomeComponent)
     },
     {
         path: 'auth',
