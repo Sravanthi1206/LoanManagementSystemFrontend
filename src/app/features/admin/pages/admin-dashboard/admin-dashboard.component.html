@@ -33,8 +33,8 @@
         <div class="col-md-3">
             <div class="card stat-card">
                 <div class="card-body">
-                    <h3>{{ stats()?.disbursedLoans || 0 }}</h3>
-                    <p class="mb-0">Disbursed</p>
+                    <h3>₹{{ totalDisbursed() | number }}</h3>
+                    <p class="mb-0">Total Disbursed</p>
                 </div>
             </div>
         </div>
@@ -48,22 +48,24 @@
         </div>
     </div>
 
-    <!-- Loan Distribution -->
+    <!-- Loan Distribution Charts -->
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Loan Distribution by Type</h5>
+                    <h5 class="mb-0">Loans by Type</h5>
                 </div>
                 <div class="card-body">
-                    <div *ngIf="loansByType()">
-                        <div *ngFor="let type of getLoanTypes()" class="mb-3">
+                    <div *ngIf="loansByType()" class="chart-container">
+                        <div *ngFor="let type of getLoanTypes()" class="chart-bar-item">
                             <div class="d-flex justify-content-between mb-1">
-                                <span>{{ loanUtils.getLoanTypeDisplay(type) }}</span>
-                                <span>{{ loansByType()![type] || 0 }}</span>
+                                <span class="chart-label">{{ loanUtils.getLoanTypeDisplay(type) }}</span>
+                                <span class="chart-value">{{ loansByType()![type] || 0 }}</span>
                             </div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar" [style.width.%]="getPercentage(loansByType()![type] || 0)">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" [style.width.%]="getPercentage(loansByType()![type] || 0)"
+                                    [style.background-color]="getLoanTypeColor(type)">
+                                    {{ getPercentage(loansByType()![type] || 0) | number:'1.0-0' }}%
                                 </div>
                             </div>
                         </div>
@@ -73,17 +75,38 @@
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Quick Actions</h5>
+                <div class="card-header">
+                    <h5 class="mb-0">Loans by Status</h5>
                 </div>
                 <div class="card-body">
-                    <button class="btn btn-primary w-100 mb-3" (click)="showCreateStaffModal()">
-                        Create Staff Account
-                    </button>
-                    <button class="btn btn-outline-primary w-100" (click)="refreshData()">
-                        Refresh Dashboard
-                    </button>
+                    <div *ngIf="loansByStatus()" class="chart-container">
+                        <div *ngFor="let status of getLoanStatuses()" class="chart-bar-item">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="chart-label">{{ loanUtils.getStatusDisplay(status) }}</span>
+                                <span class="chart-value">{{ loansByStatus()![status] || 0 }}</span>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" [style.width.%]="getPercentage(loansByStatus()![status] || 0)"
+                                    [style.background-color]="getStatusColor(status)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" (click)="showCreateStaffModal()">
+                    + Create Staff Account
+                </button>
+                <button class="btn btn-outline-primary" (click)="refreshData()">
+                    ↻ Refresh Dashboard
+                </button>
             </div>
         </div>
     </div>
@@ -92,8 +115,13 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">User Management</h5>
+                    <div class="search-box">
+                        <input type="text" class="form-control form-control-sm"
+                            placeholder="Search by name, email, phone..." [ngModel]="searchQuery()"
+                            (ngModelChange)="onSearchChange($event)">
+                    </div>
                 </div>
                 <div class="card-body">
                     <div *ngIf="loading()" class="text-center py-4">
@@ -101,28 +129,37 @@
                         <p class="mt-2">Loading users...</p>
                     </div>
 
-                    <div *ngIf="!loading() && users().length === 0" class="text-center py-4">
+                    <div *ngIf="!loading() && filteredUsers().length === 0" class="text-center py-4">
                         <p class="text-muted">No users found</p>
                     </div>
 
-                    <div *ngIf="!loading() && users().length > 0" class="table-responsive">
+                    <div *ngIf="!loading() && filteredUsers().length > 0" class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
+                                    <th class="sortable" (click)="sortBy('id')">
+                                        ID {{ getSortIcon('id') }}
+                                    </th>
+                                    <th class="sortable" (click)="sortBy('firstName')">
+                                        Name {{ getSortIcon('firstName') }}
+                                    </th>
+                                    <th class="sortable" (click)="sortBy('email')">
+                                        Email {{ getSortIcon('email') }}
+                                    </th>
+                                    <th class="sortable" (click)="sortBy('role')">
+                                        Role {{ getSortIcon('role') }}
+                                    </th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let user of users()">
+                                <tr *ngFor="let user of filteredUsers()">
                                     <td>{{ user.id }}</td>
                                     <td>{{ user.firstName }} {{ user.lastName }}</td>
                                     <td>{{ user.email }}</td>
-                                    <td><span class="badge bg-secondary">{{ user.role }}</span></td>
+                                    <td><span [class]="'badge ' + getRoleBadgeClass(user.role)">{{ user.role }}</span>
+                                    </td>
                                     <td>
                                         <span [class]="user.active ? 'badge bg-success' : 'badge bg-danger'">
                                             {{ user.active ? 'Active' : 'Inactive' }}
@@ -138,9 +175,6 @@
                                             [disabled]="processing()">
                                             Deactivate
                                         </button>
-                                        <span *ngIf="user.active && !canDeactivate(user)" class="text-muted small">
-                                            (Cannot deactivate self)
-                                        </span>
                                         <button *ngIf="!user.active" class="btn btn-sm btn-outline-success"
                                             (click)="activateUser(user)" [disabled]="processing()">
                                             Activate
@@ -174,33 +208,6 @@
                         </nav>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- User Details Modal -->
-<div class="modal-overlay" *ngIf="selectedUser()" (click)="selectedUser.set(null)">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">User Details</h5>
-                <button type="button" class="btn-close" (click)="selectedUser.set(null)">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p><strong>ID:</strong> {{ selectedUser()?.id }}</p>
-                <p><strong>Name:</strong> {{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}</p>
-                <p><strong>Email:</strong> {{ selectedUser()?.email }}</p>
-                <p><strong>Phone:</strong> {{ selectedUser()?.phone || 'N/A' }}</p>
-                <p><strong>Role:</strong> {{ selectedUser()?.role }}</p>
-                <p><strong>Status:</strong>
-                    <span [class]="selectedUser()?.active ? 'badge bg-success' : 'badge bg-danger'">
-                        {{ selectedUser()?.active ? 'Active' : 'Inactive' }}
-                    </span>
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="selectedUser.set(null)">Close</button>
             </div>
         </div>
     </div>

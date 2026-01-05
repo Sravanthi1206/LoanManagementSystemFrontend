@@ -1,5 +1,4 @@
-/* Admin Dashboard - Minimal Component-Specific Styles */
-/* Most styles inherited from global styles.css */
+/* Admin Dashboard Styles */
 
 .progress {
     background: #e9ecef;
@@ -8,8 +7,11 @@
 }
 
 .progress-bar {
-    background: #000;
     transition: width 0.3s ease;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pagination .page-link {
@@ -25,4 +27,42 @@
 
 .pagination .page-item.disabled .page-link {
     color: #6c757d;
+}
+
+/* Search Box */
+.search-box {
+    width: 300px;
+}
+
+/* Sortable Headers */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable:hover {
+    background-color: #f8f9fa;
+}
+
+/* Chart Container */
+.chart-container {
+    padding: 10px 0;
+}
+
+.chart-bar-item {
+    margin-bottom: 15px;
+}
+
+.chart-bar-item:last-child {
+    margin-bottom: 0;
+}
+
+.chart-label {
+    font-weight: 500;
+    color: #333;
+}
+
+.chart-value {
+    font-weight: 600;
+    color: #666;
 }
