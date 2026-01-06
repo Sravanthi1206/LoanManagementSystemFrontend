@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -12,7 +12,7 @@ import { AuthStateService } from '../../../../core/services/auth-state.service';
     templateUrl: './apply-loan.component.html',
     styleUrl: './apply-loan.component.css'
 })
-export class ApplyLoanComponent {
+export class ApplyLoanComponent implements OnInit {
     private fb = inject(FormBuilder);
     private loanApi = inject(LoanApiService);
     private authState = inject(AuthStateService);
@@ -24,6 +24,7 @@ export class ApplyLoanComponent {
     calculatedEmi = signal<number | null>(null);
     formSubmitted = false;
     profileIncomplete = signal(false);
+    profileError = signal('');
 
     loanForm: FormGroup;
 
@@ -48,20 +49,26 @@ export class ApplyLoanComponent {
             monthlyIncome: ['', [Validators.required, Validators.min(10000)]],
             existingLoans: [false]
         });
+    }
 
+    ngOnInit(): void {
         this.checkProfile();
     }
 
     private checkProfile(): void {
         const user = this.authState.getUser();
         if (!user) {
-            this.errorMessage.set('Please log in to apply for a loan.');
+            this.profileIncomplete.set(true);
+            this.profileError.set('Please log in to apply for a loan.');
             return;
         }
 
         if (!user.dateOfBirth || !user.panCard) {
             this.profileIncomplete.set(true);
-            this.errorMessage.set('Please update your profile with Date of Birth and PAN Card before applying for a loan.');
+            this.profileError.set('Please update your profile with Date of Birth and PAN Card before applying for a loan.');
+        } else {
+            this.profileIncomplete.set(false);
+            this.profileError.set('');
         }
     }
 
@@ -104,11 +111,13 @@ export class ApplyLoanComponent {
             };
             const rate = rates[type] || 10.0;
 
-            this.loanApi.calculateEmi(amount, rate, tenure).subscribe({
-                next: (response) => {
-                    this.calculatedEmi.set(response.monthlyEmi);
-                },
-                error: () => { }
+            // Navigate to EMI calculator with query params
+            this.router.navigate(['/emi-calculator'], {
+                queryParams: {
+                    amount: amount,
+                    rate: rate,
+                    tenure: tenure
+                }
             });
         }
     }
