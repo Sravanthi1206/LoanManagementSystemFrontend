@@ -50,7 +50,7 @@ export class AdminApiService {
   }
 
   getLoansByUserId(userId: number): Observable<Loan[]> {
-    return this.http.get<Loan[]>(`${this.apiUrl}/loans/user/${userId}`);
+    return this.http.get<Loan[]>(`${this.apiUrl}/loans/my-loans?userId=${userId}`);
   }
 
   createStaffAccount(data: any): Observable<{ id: number }> {

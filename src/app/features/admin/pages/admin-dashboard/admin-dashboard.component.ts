@@ -186,12 +186,14 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   getTotalLoans(): number {
-    if (!this.loansByType()) return 1;
-    return Object.values(this.loansByType()!).reduce((sum, val) => sum + val, 0) || 1;
+    if (!this.loansByType()) return 0;
+    return Object.values(this.loansByType()!).reduce((sum, val) => sum + val, 0);
   }
 
   getPercentage(count: number): number {
-    return (count / this.getTotalLoans()) * 100;
+    const total = this.getTotalLoans();
+    if (total === 0) return 0;
+    return (count / total) * 100;
   }
 
   viewUserDetails(user: User): void {
@@ -200,7 +202,14 @@ export class AdminDashboardComponent implements OnInit {
 
   canDeactivate(user: User): boolean {
     const currentId = this.currentUserId();
-    return user.id !== currentId;
+    const currentRole = this.authState.getRole();
+    // Cannot deactivate self
+    if (user.id === currentId) return false;
+    // Cannot deactivate ROOT_ADMIN
+    if (user.role === 'ROOT_ADMIN') return false;
+    // Only ROOT_ADMIN can deactivate/activate other ADMINs
+    if (user.role === 'ADMIN' && currentRole !== 'ROOT_ADMIN') return false;
+    return true;
   }
 
   showDeactivateConfirm(user: User): void {
