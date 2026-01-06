@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { AdminApiService } from '../../services/admin-api.service';
 import { AuthStateService } from '../../../../core/services/auth-state.service';
 import { LoanUtilsService } from '../../../../shared/services/loan-utils.service';
-import { User, DashboardStats } from '../../../../shared/types/models';
+import { User, DashboardStats, Loan } from '../../../../shared/types/models';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -44,6 +44,12 @@ export class AdminDashboardComponent implements OnInit {
 
   userToDeactivate = signal<User | null>(null);
 
+  // Loan management signals
+  officers = signal<(User & { pendingCount?: number })[]>([]);
+  loansUnderReview = signal<Loan[]>([]);
+  loanToReassign = signal<Loan | null>(null);
+  selectedOfficerId: number | null = null;
+
   toastMessage = signal('');
   toastType = signal<'success' | 'error'>('success');
 
@@ -81,6 +87,8 @@ export class AdminDashboardComponent implements OnInit {
     });
 
     this.loadUsers();
+    this.loadOfficers();
+    this.loadLoansUnderReview();
   }
 
   loadUsers(): void {
@@ -324,5 +332,86 @@ export class AdminDashboardComponent implements OnInit {
 
     gradient += ')';
     return gradient;
+  }
+
+  // ============ Loan Admin Methods ============
+
+  loadOfficers(): void {
+    this.adminApi.getOfficerUsers().subscribe({
+      next: (officerList) => {
+        // For each officer, get their pending count
+        const officersWithCount = officerList.map(officer => ({
+          ...officer,
+          pendingCount: 0
+        }));
+        this.officers.set(officersWithCount);
+
+        // Load pending counts for each officer
+        officerList.forEach((officer, index) => {
+          this.adminApi.getOfficerPendingCount(officer.id).subscribe({
+            next: (count) => {
+              const updated = [...this.officers()];
+              updated[index] = { ...updated[index], pendingCount: count };
+              this.officers.set(updated);
+            },
+            error: () => { }
+          });
+        });
+      },
+      error: () => { }
+    });
+  }
+
+  loadLoansUnderReview(): void {
+    this.adminApi.getLoansUnderReview(0, 50).subscribe({
+      next: (response) => {
+        this.loansUnderReview.set(response.content || []);
+      },
+      error: () => { }
+    });
+  }
+
+  showReassignModal(loan: Loan): void {
+    this.loanToReassign.set(loan);
+    this.selectedOfficerId = loan.assignedOfficerId || null;
+  }
+
+  confirmReassign(): void {
+    const loan = this.loanToReassign();
+    if (!loan || !this.selectedOfficerId) return;
+
+    this.processing.set(true);
+    this.adminApi.reassignLoan(loan.loanId, this.selectedOfficerId).subscribe({
+      next: () => {
+        this.showToast('Loan reassigned successfully', 'success');
+        this.loanToReassign.set(null);
+        this.selectedOfficerId = null;
+        this.loadLoansUnderReview();
+        this.loadOfficers();
+        this.processing.set(false);
+      },
+      error: (err) => {
+        this.showToast(err.error?.message || 'Failed to reassign loan', 'error');
+        this.processing.set(false);
+      }
+    });
+  }
+
+  releaseLoan(loan: Loan): void {
+    if (!confirm(`Release loan #${loan.loanId} back to the pool?`)) return;
+
+    this.processing.set(true);
+    this.adminApi.releaseLoan(loan.loanId).subscribe({
+      next: () => {
+        this.showToast('Loan released to pool', 'success');
+        this.loadLoansUnderReview();
+        this.loadOfficers();
+        this.processing.set(false);
+      },
+      error: (err) => {
+        this.showToast(err.error?.message || 'Failed to release loan', 'error');
+        this.processing.set(false);
+      }
+    });
   }
 }

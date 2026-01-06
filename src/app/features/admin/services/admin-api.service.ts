@@ -65,6 +65,52 @@ export class AdminApiService {
     return this.http.put<User>(`${this.apiUrl}/admin/users/${userId}/activate`, {});
   }
 
+  // ============ Loan Admin APIs ============
+
+  getAllLoans(page: number = 0, size: number = 20): Observable<PageResponse<Loan>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/admin`, { params });
+  }
+
+  getLoansUnderReview(page: number = 0, size: number = 20): Observable<PageResponse<Loan>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/admin/under-review`, { params });
+  }
+
+  reassignLoan(loanId: number, officerId: number): Observable<Loan> {
+    return this.http.put<Loan>(`${this.apiUrl}/loans/admin/${loanId}/reassign/${officerId}`, {});
+  }
+
+  releaseLoan(loanId: number): Observable<Loan> {
+    return this.http.put<Loan>(`${this.apiUrl}/loans/admin/${loanId}/release`, {});
+  }
+
+  getOfficerPendingCount(officerId: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/loans/admin/officer/${officerId}/pending-count`);
+  }
+
+  getOfficerUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/users/officers`);
+  }
+
+  // ============ ROOT_ADMIN APIs ============
+
+  getPendingAdminApprovals(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/admin/pending-approvals`);
+  }
+
+  approveAdmin(userId: number): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/admin/approve/${userId}`, {});
+  }
+
+  rejectAdmin(userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/reject/${userId}`);
+  }
+
   // Payment APIs
   recordDisbursement(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/payments/disburse`, data);

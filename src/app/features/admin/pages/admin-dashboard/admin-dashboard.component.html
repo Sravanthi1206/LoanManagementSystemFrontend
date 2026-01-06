@@ -100,6 +100,80 @@
         </div>
     </div>
 
+    <!-- Officer Workload Section -->
+    <div class="row mb-4" *ngIf="officers().length > 0">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">👨‍💼 Officer Workload</h5>
+                </div>
+                <div class="card-body">
+                    <div class="officer-grid">
+                        <div *ngFor="let officer of officers()" class="officer-card">
+                            <div class="officer-info">
+                                <span class="officer-name">{{ officer.firstName }} {{ officer.lastName }}</span>
+                                <span class="officer-email">{{ officer.email }}</span>
+                            </div>
+                            <div class="officer-workload">
+                                <span class="workload-count">{{ officer.pendingCount || 0 }}</span>
+                                <span class="workload-label">pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loans Under Review Section -->
+    <div class="row mb-4" *ngIf="loansUnderReview().length > 0">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📋 Loans Under Review</h5>
+                    <span class="badge bg-warning">{{ loansUnderReview().length }} loans</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Assigned Officer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let loan of loansUnderReview()">
+                                    <td>#{{ loan.loanId }}</td>
+                                    <td>User #{{ loan.userId }}</td>
+                                    <td>₹{{ loan.amountRequested | number }}</td>
+                                    <td>
+                                        <span *ngIf="loan.assignedOfficerId">Officer #{{ loan.assignedOfficerId
+                                            }}</span>
+                                        <span *ngIf="!loan.assignedOfficerId" class="text-muted">Unassigned</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1"
+                                            (click)="showReassignModal(loan)" title="Reassign">
+                                            🔄 Reassign
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" (click)="releaseLoan(loan)"
+                                            title="Release to Pool">
+                                            ↩ Release
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="row mb-4">
         <div class="col-12">
@@ -233,6 +307,39 @@
                 <button type="button" class="btn btn-secondary" (click)="userToDeactivate.set(null)">Cancel</button>
                 <button type="button" class="btn btn-danger" (click)="confirmDeactivate()" [disabled]="processing()">
                     <span *ngIf="!processing()">Deactivate</span>
+                    <span *ngIf="processing()"><span
+                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reassign Loan Modal -->
+<div class="modal-overlay" *ngIf="loanToReassign()" (click)="loanToReassign.set(null)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🔄 Reassign Loan #{{ loanToReassign()?.loanId }}</h5>
+                <button type="button" class="btn-close" (click)="loanToReassign.set(null)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Select an officer to assign this loan to:</p>
+                <div class="form-group">
+                    <label for="officerSelect" class="form-label">Officer</label>
+                    <select id="officerSelect" class="form-select" [(ngModel)]="selectedOfficerId">
+                        <option [value]="null">-- Select Officer --</option>
+                        <option *ngFor="let officer of officers()" [value]="officer.id">
+                            {{ officer.firstName }} {{ officer.lastName }} ({{ officer.pendingCount || 0 }} pending)
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="loanToReassign.set(null)">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="confirmReassign()"
+                    [disabled]="!selectedOfficerId || processing()">
+                    <span *ngIf="!processing()">Reassign</span>
                     <span *ngIf="processing()"><span
                             class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
                 </button>
