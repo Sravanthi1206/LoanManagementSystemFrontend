@@ -2,12 +2,11 @@ import { Component } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal.component';
-import { NotificationDropdownComponent } from '../../shared/components/notification-dropdown/notification-dropdown.component';
 
 @Component({
   selector: 'app-customer-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, CommonModule, ConfirmationModalComponent, NotificationDropdownComponent],
+  imports: [RouterOutlet, RouterLink, CommonModule, ConfirmationModalComponent],
   templateUrl: './customer-layout.component.html',
   styleUrl: './customer-layout.component.css'
 })
