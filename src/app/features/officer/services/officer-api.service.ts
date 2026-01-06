@@ -24,8 +24,8 @@ export class OfficerApiService {
     return this.http.get(`${this.apiUrl}/dashboard/customer-summary/${userId}`);
   }
 
-  getCustomerLoans(userId: number): Observable<PageResponse<Loan>> {
-    return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/user/${userId}`);
+  getCustomerLoans(userId: number): Observable<Loan[]> {
+    return this.http.get<Loan[]>(`${this.apiUrl}/loans/my-loans?userId=${userId}`);
   }
 
   // Loan Processing APIs

@@ -64,7 +64,7 @@ export interface Loan {
     assignedOfficerName?: string;  // For displaying officer name
 }
 
-export type LoanType = 'HOME_LOAN' | 'PERSONAL_LOAN' | 'CAR_LOAN' | 'EDUCATION_LOAN' | 'BUSINESS_LOAN';
+export type LoanType = 'PERSONAL' | 'HOME' | 'VEHICLE' | 'EDUCATION' | 'BUSINESS';
 
 export type LoanStatus = 'APPLIED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'DISBURSED' | 'CLOSED' | 'WITHDRAWN';
 

@@ -86,10 +86,10 @@ export class LoanReviewComponent implements OnInit {
 
     loadCustomerLoans(userId: number): void {
         this.officerApi.getCustomerLoans(userId).subscribe({
-            next: (response) => {
+            next: (loans: Loan[]) => {
                 // Exclude current loan from history
                 const currentLoanId = this.loan()?.loanId;
-                const otherLoans = response.content.filter(l => l.loanId !== currentLoanId);
+                const otherLoans = loans.filter((l: Loan) => l.loanId !== currentLoanId);
                 this.customerLoans.set(otherLoans);
             },
             error: () => this.customerLoans.set([])
