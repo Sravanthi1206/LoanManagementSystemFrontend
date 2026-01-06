@@ -175,6 +175,29 @@
     text-align: right;
 }
 
+/* Disclaimer Box */
+.disclaimer-box {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid #fbbf24;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.disclaimer-box strong {
+    display: block;
+    color: #b45309;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+.disclaimer-box p {
+    color: #92400e;
+    font-size: 0.8rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
 /* Results Panel */
 .results-panel {
     background: white;

@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'app-emi-calculator',
@@ -10,7 +10,9 @@ import { RouterLink } from '@angular/router';
     templateUrl: './emi-calculator.component.html',
     styleUrl: './emi-calculator.component.css'
 })
-export class EmiCalculatorComponent {
+export class EmiCalculatorComponent implements OnInit {
+    private route = inject(ActivatedRoute);
+
     // Form inputs
     loanAmount = signal(500000);
     interestRate = signal(10);
@@ -26,8 +28,20 @@ export class EmiCalculatorComponent {
     // UI state
     showSchedule = signal(false);
 
-    constructor() {
-        this.calculate();
+    ngOnInit(): void {
+        // Read query params if present
+        this.route.queryParams.subscribe(params => {
+            if (params['amount']) {
+                this.loanAmount.set(Number(params['amount']));
+            }
+            if (params['rate']) {
+                this.interestRate.set(Number(params['rate']));
+            }
+            if (params['tenure']) {
+                this.tenure.set(Number(params['tenure']));
+            }
+            this.calculate();
+        });
     }
 
     onAmountChange(value: number): void {

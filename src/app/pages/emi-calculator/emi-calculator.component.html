@@ -2,7 +2,7 @@
     <div class="container">
         <!-- Header -->
         <div class="page-header">
-            <a routerLink="/" class="back-link">← Back to Home</a>
+            <a href="javascript:history.back()" class="back-link">← Back</a>
             <h1>EMI Calculator</h1>
             <p>Calculate your monthly EMI and view complete amortization schedule</p>
         </div>
@@ -78,6 +78,13 @@
 
             <!-- Results -->
             <div class="results-panel">
+                <!-- Disclaimer -->
+                <div class="disclaimer-box">
+                    <strong>⚠️ Estimated EMI</strong>
+                    <p>This is an estimated calculation based on the inputs provided. Actual EMI may vary depending on
+                        the lender's terms, processing fees, and other charges.</p>
+                </div>
+
                 <div class="emi-result">
                     <span class="label">Monthly EMI</span>
                     <span class="value">₹{{ monthlyEmi() | number }}</span>
