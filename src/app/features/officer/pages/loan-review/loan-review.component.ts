@@ -21,6 +21,7 @@ export class LoanReviewComponent implements OnInit {
     protected loanUtils = inject(LoanUtilsService);
 
     loan = signal<Loan | null>(null);
+    customerLoans = signal<Loan[]>([]);
     loading = signal(true);
     processing = signal(false);
     activeTab = signal<'approve' | 'reject'>('approve');
@@ -72,12 +73,25 @@ export class LoanReviewComponent implements OnInit {
             next: (loan) => {
                 this.loan.set(loan);
                 this.initializeForm(loan);
+                this.loadCustomerLoans(loan.userId);
                 this.loading.set(false);
             },
             error: () => {
                 this.showToast('Failed to load loan details', 'error');
                 this.loading.set(false);
             }
+        });
+    }
+
+    loadCustomerLoans(userId: number): void {
+        this.officerApi.getCustomerLoans(userId).subscribe({
+            next: (response) => {
+                // Exclude current loan from history
+                const currentLoanId = this.loan()?.loanId;
+                const otherLoans = response.content.filter(l => l.loanId !== currentLoanId);
+                this.customerLoans.set(otherLoans);
+            },
+            error: () => this.customerLoans.set([])
         });
     }
 

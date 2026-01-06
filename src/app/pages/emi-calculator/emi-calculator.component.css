@@ -65,45 +65,56 @@
     margin-bottom: 0;
 }
 
-.input-group label {
+.input-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 16px;
+    gap: 16px;
+}
+
+.input-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-weight: 600;
     color: #111;
-    margin-bottom: 16px;
 }
 
 .tenure-toggle {
-    background: #f0f0f0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.8rem;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .tenure-toggle:hover {
-    background: #e0e0e0;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
 }
 
-.slider-input {
-    display: flex;
-    gap: 16px;
-    align-items: center;
+.slider-wrapper {
+    width: 100%;
 }
 
-.slider-input input[type="range"] {
-    flex: 1;
+.slider-wrapper input[type="range"] {
+    width: 100%;
     -webkit-appearance: none;
+    appearance: none;
     height: 6px;
     background: #e5e7eb;
     border-radius: 3px;
     outline: none;
 }
 
-.slider-input input[type="range"]::-webkit-slider-thumb {
+.slider-wrapper input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 20px;
     height: 20px;
@@ -119,7 +130,7 @@
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 8px 12px;
-    min-width: 140px;
+    min-width: 120px;
 }
 
 .input-with-prefix input,
@@ -135,6 +146,7 @@
 .suffix {
     color: #888;
     font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .prefix {
@@ -148,9 +160,19 @@
 .range-labels {
     display: flex;
     justify-content: space-between;
+    width: 100%;
     margin-top: 8px;
+    padding: 0;
     font-size: 0.75rem;
-    color: #888;
+    color: #999;
+}
+
+.range-labels span:first-child {
+    text-align: left;
+}
+
+.range-labels span:last-child {
+    text-align: right;
 }
 
 /* Results Panel */
@@ -259,24 +281,26 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     background: white;
     border-radius: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    text-align: center;
 }
 
 .pie-center span {
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .pie-center small {
-    font-size: 0.65rem;
+    font-size: 0.55rem;
     color: #888;
+    line-height: 1.2;
 }
 
 .legend {

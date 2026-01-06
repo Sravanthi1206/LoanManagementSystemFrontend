@@ -24,6 +24,10 @@ export class OfficerApiService {
     return this.http.get(`${this.apiUrl}/dashboard/customer-summary/${userId}`);
   }
 
+  getCustomerLoans(userId: number): Observable<PageResponse<Loan>> {
+    return this.http.get<PageResponse<Loan>>(`${this.apiUrl}/loans/user/${userId}`);
+  }
+
   // Loan Processing APIs
   getAllLoans(page: number = 0, size: number = 10): Observable<PageResponse<Loan>> {
     const params = new HttpParams()

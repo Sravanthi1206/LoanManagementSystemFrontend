@@ -262,6 +262,57 @@
     margin: 0;
 }
 
+/* Loan History Table */
+.loan-history-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.loan-history-table th,
+.loan-history-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.loan-history-table th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.loan-history-table td {
+    font-size: 0.875rem;
+    color: #333;
+}
+
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+    font-style: italic;
+}
+
+.no-data p {
+    margin: 0;
+}
+
+.status-disbursed {
+    background: #E0E7FF;
+    color: #3730A3;
+}
+
+.status-closed {
+    background: #E5E7EB;
+    color: #374151;
+}
+
+.status-withdrawn {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
 /* Action Tabs */
 .action-tabs {
     display: flex;

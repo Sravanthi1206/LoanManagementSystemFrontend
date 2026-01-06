@@ -95,6 +95,39 @@
                     </div>
                 </div>
 
+                <!-- Customer Loan History -->
+                <div class="section">
+                    <h3>Customer Loan History</h3>
+                    <div *ngIf="customerLoans().length === 0" class="no-data">
+                        <p>No previous loans found for this customer</p>
+                    </div>
+                    <div *ngIf="customerLoans().length > 0" class="loan-history-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Loan ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let historyLoan of customerLoans()">
+                                    <td>#{{ historyLoan.loanId }}</td>
+                                    <td>{{ loanUtils.getLoanTypeDisplay(historyLoan.type) }}</td>
+                                    <td>₹{{ historyLoan.amountRequested | number }}</td>
+                                    <td>
+                                        <span class="status-badge"
+                                            [class]="'status-' + historyLoan.status.toLowerCase()">
+                                            {{ loanUtils.getStatusDisplay(historyLoan.status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Previous Remarks -->
                 <div class="section" *ngIf="loan()!.remarks">
                     <h3>Remarks</h3>

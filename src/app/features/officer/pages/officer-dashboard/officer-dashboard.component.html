@@ -140,17 +140,13 @@
                                         <span *ngIf="!loan.creditScore" class="text-muted">Not checked</span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-success me-1" (click)="showApproveModal(loan)"
-                                            [disabled]="!loan.creditScore"
-                                            [title]="!loan.creditScore ? 'Perform credit check first' : 'Approve Loan'">
-                                            Approve
-                                        </button>
-                                        <button class="btn btn-sm btn-danger me-1" (click)="showRejectModal(loan)">
-                                            Reject
+                                        <button class="btn btn-sm btn-primary me-1"
+                                            (click)="goToLoanReview(loan.loanId)">
+                                            Review
                                         </button>
                                         <button class="btn btn-sm btn-outline-warning" (click)="runCreditCheck(loan)"
                                             [disabled]="!!loan.creditScore">
-                                            {{ loan.creditScore ? 'Checked' : 'Run Credit Check' }}
+                                            {{ loan.creditScore ? 'Checked' : 'Credit Check' }}
                                         </button>
                                     </td>
                                 </tr>

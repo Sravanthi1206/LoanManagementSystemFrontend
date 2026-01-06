@@ -12,60 +12,66 @@
             <div class="calculator-form">
                 <!-- Loan Amount -->
                 <div class="input-group">
-                    <label>Loan Amount</label>
-                    <div class="slider-input">
-                        <input type="range" [min]="50000" [max]="10000000" [step]="10000" [value]="loanAmount()"
-                            (input)="onAmountChange($any($event.target).value)">
+                    <div class="input-row">
+                        <label>Loan Amount</label>
                         <div class="input-with-prefix">
                             <span class="prefix">₹</span>
                             <input type="number" [value]="loanAmount()"
                                 (input)="onAmountChange($any($event.target).value)">
                         </div>
                     </div>
-                    <div class="range-labels">
-                        <span>₹50,000</span>
-                        <span>₹1 Crore</span>
+                    <div class="slider-wrapper">
+                        <input type="range" [min]="50000" [max]="10000000" [step]="10000" [value]="loanAmount()"
+                            (input)="onAmountChange($any($event.target).value)">
+                        <div class="range-labels">
+                            <span>₹50K</span>
+                            <span>₹1 Cr</span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Interest Rate -->
                 <div class="input-group">
-                    <label>Interest Rate (% per annum)</label>
-                    <div class="slider-input">
-                        <input type="range" [min]="5" [max]="25" [step]="0.1" [value]="interestRate()"
-                            (input)="onRateChange($any($event.target).value)">
+                    <div class="input-row">
+                        <label>Interest Rate (p.a.)</label>
                         <div class="input-with-suffix">
                             <input type="number" [value]="interestRate()" [step]="0.1"
                                 (input)="onRateChange($any($event.target).value)">
                             <span class="suffix">%</span>
                         </div>
                     </div>
-                    <div class="range-labels">
-                        <span>5%</span>
-                        <span>25%</span>
+                    <div class="slider-wrapper">
+                        <input type="range" [min]="5" [max]="25" [step]="0.1" [value]="interestRate()"
+                            (input)="onRateChange($any($event.target).value)">
+                        <div class="range-labels">
+                            <span>5%</span>
+                            <span>25%</span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Loan Tenure -->
                 <div class="input-group">
-                    <label>
-                        Loan Tenure
-                        <button class="tenure-toggle" (click)="toggleTenureType()">
-                            {{ tenureType() === 'months' ? 'Months' : 'Years' }}
-                        </button>
-                    </label>
-                    <div class="slider-input">
-                        <input type="range" [min]="tenureType() === 'months' ? 6 : 1"
-                            [max]="tenureType() === 'months' ? 360 : 30" [step]="tenureType() === 'months' ? 6 : 1"
-                            [value]="tenure()" (input)="onTenureChange($any($event.target).value)">
+                    <div class="input-row">
+                        <label>
+                            Loan Tenure
+                            <button class="tenure-toggle" (click)="toggleTenureType()">
+                                {{ tenureType() === 'months' ? 'Mo' : 'Yr' }}
+                            </button>
+                        </label>
                         <div class="input-with-suffix">
                             <input type="number" [value]="tenure()" (input)="onTenureChange($any($event.target).value)">
                             <span class="suffix">{{ tenureType() === 'months' ? 'mo' : 'yr' }}</span>
                         </div>
                     </div>
-                    <div class="range-labels">
-                        <span>{{ tenureType() === 'months' ? '6 mo' : '1 yr' }}</span>
-                        <span>{{ tenureType() === 'months' ? '30 yr' : '30 yr' }}</span>
+                    <div class="slider-wrapper">
+                        <input type="range" [min]="tenureType() === 'months' ? 6 : 1"
+                            [max]="tenureType() === 'months' ? 360 : 30" [step]="tenureType() === 'months' ? 6 : 1"
+                            [value]="tenure()" (input)="onTenureChange($any($event.target).value)">
+                        <div class="range-labels">
+                            <span>{{ tenureType() === 'months' ? '6 mo' : '1 yr' }}</span>
+                            <span>{{ tenureType() === 'months' ? '360 mo' : '30 yr' }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -106,7 +112,7 @@
                         [style.background]="'conic-gradient(#10B981 0deg ' + (loanAmount() / totalPayment() * 360) + 'deg, #3B82F6 ' + (loanAmount() / totalPayment() * 360) + 'deg 360deg)'">
                         <div class="pie-center">
                             <span>{{ ((totalInterest() / totalPayment()) * 100 | number:'1.0-0') }}%</span>
-                            <small>Interest</small>
+                            <small>Interest Portion</small>
                         </div>
                     </div>
                     <div class="legend">
