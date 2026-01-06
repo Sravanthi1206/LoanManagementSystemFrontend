@@ -1,0 +1,163 @@
+<div class="calculator-page">
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <a routerLink="/" class="back-link">← Back to Home</a>
+            <h1>EMI Calculator</h1>
+            <p>Calculate your monthly EMI and view complete amortization schedule</p>
+        </div>
+
+        <div class="calculator-grid">
+            <!-- Calculator Form -->
+            <div class="calculator-form">
+                <!-- Loan Amount -->
+                <div class="input-group">
+                    <label>Loan Amount</label>
+                    <div class="slider-input">
+                        <input type="range" [min]="50000" [max]="10000000" [step]="10000" [value]="loanAmount()"
+                            (input)="onAmountChange($any($event.target).value)">
+                        <div class="input-with-prefix">
+                            <span class="prefix">₹</span>
+                            <input type="number" [value]="loanAmount()"
+                                (input)="onAmountChange($any($event.target).value)">
+                        </div>
+                    </div>
+                    <div class="range-labels">
+                        <span>₹50,000</span>
+                        <span>₹1 Crore</span>
+                    </div>
+                </div>
+
+                <!-- Interest Rate -->
+                <div class="input-group">
+                    <label>Interest Rate (% per annum)</label>
+                    <div class="slider-input">
+                        <input type="range" [min]="5" [max]="25" [step]="0.1" [value]="interestRate()"
+                            (input)="onRateChange($any($event.target).value)">
+                        <div class="input-with-suffix">
+                            <input type="number" [value]="interestRate()" [step]="0.1"
+                                (input)="onRateChange($any($event.target).value)">
+                            <span class="suffix">%</span>
+                        </div>
+                    </div>
+                    <div class="range-labels">
+                        <span>5%</span>
+                        <span>25%</span>
+                    </div>
+                </div>
+
+                <!-- Loan Tenure -->
+                <div class="input-group">
+                    <label>
+                        Loan Tenure
+                        <button class="tenure-toggle" (click)="toggleTenureType()">
+                            {{ tenureType() === 'months' ? 'Months' : 'Years' }}
+                        </button>
+                    </label>
+                    <div class="slider-input">
+                        <input type="range" [min]="tenureType() === 'months' ? 6 : 1"
+                            [max]="tenureType() === 'months' ? 360 : 30" [step]="tenureType() === 'months' ? 6 : 1"
+                            [value]="tenure()" (input)="onTenureChange($any($event.target).value)">
+                        <div class="input-with-suffix">
+                            <input type="number" [value]="tenure()" (input)="onTenureChange($any($event.target).value)">
+                            <span class="suffix">{{ tenureType() === 'months' ? 'mo' : 'yr' }}</span>
+                        </div>
+                    </div>
+                    <div class="range-labels">
+                        <span>{{ tenureType() === 'months' ? '6 mo' : '1 yr' }}</span>
+                        <span>{{ tenureType() === 'months' ? '30 yr' : '30 yr' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="results-panel">
+                <div class="emi-result">
+                    <span class="label">Monthly EMI</span>
+                    <span class="value">₹{{ monthlyEmi() | number }}</span>
+                </div>
+
+                <div class="breakdown">
+                    <div class="breakdown-item">
+                        <span class="dot principal"></span>
+                        <div class="info">
+                            <span class="label">Principal Amount</span>
+                            <span class="value">{{ formatCurrency(loanAmount()) }}</span>
+                        </div>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="dot interest"></span>
+                        <div class="info">
+                            <span class="label">Total Interest</span>
+                            <span class="value">{{ formatCurrency(totalInterest()) }}</span>
+                        </div>
+                    </div>
+                    <div class="breakdown-item total">
+                        <div class="info">
+                            <span class="label">Total Payment</span>
+                            <span class="value">{{ formatCurrency(totalPayment()) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Chart -->
+                <div class="pie-chart-container">
+                    <div class="pie-chart"
+                        [style.background]="'conic-gradient(#10B981 0deg ' + (loanAmount() / totalPayment() * 360) + 'deg, #3B82F6 ' + (loanAmount() / totalPayment() * 360) + 'deg 360deg)'">
+                        <div class="pie-center">
+                            <span>{{ ((totalInterest() / totalPayment()) * 100 | number:'1.0-0') }}%</span>
+                            <small>Interest</small>
+                        </div>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <span class="dot principal"></span>
+                            <span>Principal</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="dot interest"></span>
+                            <span>Interest</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-schedule" (click)="toggleSchedule()">
+                    {{ showSchedule() ? 'Hide' : 'View' }} Amortization Schedule
+                </button>
+            </div>
+        </div>
+
+        <!-- Amortization Schedule -->
+        <div class="schedule-section" *ngIf="showSchedule()">
+            <h2>Amortization Schedule</h2>
+            <div class="schedule-table-wrapper">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>EMI</th>
+                            <th>Principal</th>
+                            <th>Interest</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of schedule()">
+                            <td>{{ item.month }}</td>
+                            <td>₹{{ item.emi | number }}</td>
+                            <td>₹{{ item.principal | number }}</td>
+                            <td>₹{{ item.interest | number }}</td>
+                            <td>₹{{ item.balance | number }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <p>Ready to apply for a loan?</p>
+            <a routerLink="/auth/register" class="btn-apply">Get Started</a>
+        </div>
+    </div>
+</div>

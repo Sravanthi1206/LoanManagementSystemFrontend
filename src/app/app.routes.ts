@@ -9,6 +9,11 @@ export const routes: Routes = [
             .then(m => m.HomeComponent)
     },
     {
+        path: 'emi-calculator',
+        loadComponent: () => import('./pages/emi-calculator/emi-calculator.component')
+            .then(m => m.EmiCalculatorComponent)
+    },
+    {
         path: 'auth',
         loadComponent: () => import('./layouts/auth-layout/auth-layout.component')
             .then(m => m.AuthLayoutComponent),

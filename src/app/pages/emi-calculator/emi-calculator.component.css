@@ -1,0 +1,410 @@
+/* EMI Calculator - Clean Design */
+
+.calculator-page {
+    min-height: 100vh;
+    background: #fafafa;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Header */
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.back-link:hover {
+    color: #111;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 8px 0;
+}
+
+.page-header p {
+    color: #666;
+    margin: 0;
+}
+
+/* Calculator Grid */
+.calculator-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    margin-bottom: 40px;
+}
+
+/* Form */
+.calculator-form {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 32px;
+}
+
+.input-group {
+    margin-bottom: 32px;
+}
+
+.input-group:last-child {
+    margin-bottom: 0;
+}
+
+.input-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 16px;
+}
+
+.tenure-toggle {
+    background: #f0f0f0;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.tenure-toggle:hover {
+    background: #e0e0e0;
+}
+
+.slider-input {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.slider-input input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    outline: none;
+}
+
+.slider-input input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #111;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.input-with-prefix,
+.input-with-suffix {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 140px;
+}
+
+.input-with-prefix input,
+.input-with-suffix input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.prefix,
+.suffix {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.prefix {
+    margin-right: 4px;
+}
+
+.suffix {
+    margin-left: 4px;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* Results Panel */
+.results-panel {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 32px;
+}
+
+.emi-result {
+    text-align: center;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.emi-result .label {
+    display: block;
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.emi-result .value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111;
+}
+
+/* Breakdown */
+.breakdown {
+    margin-bottom: 24px;
+}
+
+.breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.breakdown-item.total {
+    border-bottom: none;
+    padding-top: 16px;
+}
+
+.breakdown-item.total .label {
+    font-weight: 600;
+}
+
+.breakdown-item.total .value {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.dot.principal {
+    background: #10B981;
+}
+
+.dot.interest {
+    background: #3B82F6;
+}
+
+.breakdown-item .info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+}
+
+.breakdown-item .label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.breakdown-item .value {
+    font-weight: 500;
+    color: #111;
+}
+
+/* Pie Chart */
+.pie-chart-container {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.pie-chart {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    position: relative;
+}
+
+.pie-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.pie-center span {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.pie-center small {
+    font-size: 0.65rem;
+    color: #888;
+}
+
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Schedule Button */
+.btn-schedule {
+    width: 100%;
+    padding: 12px;
+    background: #111;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-schedule:hover {
+    background: #333;
+}
+
+/* Schedule Section */
+.schedule-section {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 40px;
+}
+
+.schedule-section h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 20px 0;
+}
+
+.schedule-table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schedule-table th,
+.schedule-table td {
+    padding: 12px;
+    text-align: right;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.schedule-table th:first-child,
+.schedule-table td:first-child {
+    text-align: left;
+}
+
+.schedule-table th {
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #888;
+    position: sticky;
+    top: 0;
+    background: white;
+}
+
+.schedule-table td {
+    font-size: 0.9rem;
+}
+
+/* CTA */
+.cta-section {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 16px;
+}
+
+.cta-section p {
+    color: #666;
+    margin: 0 0 16px 0;
+}
+
+.btn-apply {
+    display: inline-block;
+    padding: 12px 32px;
+    background: #111;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-apply:hover {
+    background: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .calculator-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pie-chart-container {
+        flex-direction: column;
+    }
+
+    .schedule-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .schedule-table {
+        min-width: 500px;
+    }
+}
