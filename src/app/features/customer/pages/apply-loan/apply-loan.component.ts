@@ -13,6 +13,7 @@ import { AuthStateService } from '../../../../core/services/auth-state.service';
     styleUrl: './apply-loan.component.css'
 })
 export class ApplyLoanComponent implements OnInit {
+    private static readonly FORM_STORAGE_KEY = 'loanApplicationFormData';
     private fb = inject(FormBuilder);
     private loanApi = inject(LoanApiService);
     private authState = inject(AuthStateService);
@@ -53,6 +54,30 @@ export class ApplyLoanComponent implements OnInit {
 
     ngOnInit(): void {
         this.checkProfile();
+        this.restoreFormData();
+    }
+
+    private restoreFormData(): void {
+        const savedData = sessionStorage.getItem(ApplyLoanComponent.FORM_STORAGE_KEY);
+        if (savedData) {
+            try {
+                const formData = JSON.parse(savedData);
+                this.loanForm.patchValue(formData);
+                if (formData.type) {
+                    this.onLoanTypeChange();
+                }
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+    }
+
+    private saveFormData(): void {
+        sessionStorage.setItem(ApplyLoanComponent.FORM_STORAGE_KEY, JSON.stringify(this.loanForm.value));
+    }
+
+    private clearFormData(): void {
+        sessionStorage.removeItem(ApplyLoanComponent.FORM_STORAGE_KEY);
     }
 
     private checkProfile(): void {
@@ -111,6 +136,9 @@ export class ApplyLoanComponent implements OnInit {
             };
             const rate = rates[type] || 10.0;
 
+            // Save form data before navigating
+            this.saveFormData();
+
             // Navigate to EMI calculator with query params
             this.router.navigate(['/emi-calculator'], {
                 queryParams: {
@@ -151,6 +179,8 @@ export class ApplyLoanComponent implements OnInit {
         const request = {
             userId: user.id,
             userEmail: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
             ...formValue,
             annualIncome: formValue.monthlyIncome * 12
         };
@@ -158,6 +188,7 @@ export class ApplyLoanComponent implements OnInit {
         this.loanApi.applyLoan(request).subscribe({
             next: (response) => {
                 this.loading.set(false);
+                this.clearFormData();
                 this.successMessage.set(`Your loan application #${response.loanId} has been submitted successfully.`);
             },
             error: (err) => {

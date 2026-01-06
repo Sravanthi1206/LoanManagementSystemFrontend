@@ -33,7 +33,7 @@
         <div class="col-md-3">
             <div class="card stat-card">
                 <div class="card-body">
-                    <h3>₹{{ totalDisbursed() | number }}</h3>
+                    <h3>₹{{ stats()?.totalDisbursedAmount || 0 | number }}</h3>
                     <p class="mb-0">Total Disbursed</p>
                 </div>
             </div>

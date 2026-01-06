@@ -334,29 +334,66 @@
     </div>
 </div>
 
-<!-- Pay EMI Confirmation Modal -->
+<!-- Pay EMI Confirmation Modal (Wallet-style) -->
 <div class="modal-overlay" *ngIf="emiToPay()" (click)="emiToPay.set(null)">
     <div class="modal-dialog" (click)="$event.stopPropagation()">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Pay EMI</h5>
-                <button type="button" class="btn-close" (click)="emiToPay.set(null)">&times;</button>
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">💳 Pay EMI from Wallet</h5>
+                <button type="button" class="btn-close btn-close-white" (click)="emiToPay.set(null)">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Confirm payment for:</p>
-                <div class="bg-light p-3 rounded">
-                    <p class="mb-1"><strong>Loan ID:</strong> #{{ emiToPay()?.loanId }}</p>
-                    <p class="mb-1"><strong>Installment:</strong> {{ emiToPay()?.installmentNo }}</p>
-                    <p class="mb-1"><strong>Due Date:</strong> {{ emiToPay()?.dueDate | date: 'mediumDate' }}</p>
-                    <p class="mb-0"><strong>Amount:</strong> ₹{{ emiToPay()?.totalEmi | number }}</p>
+                <!-- Current Balance -->
+                <div class="text-center mb-4">
+                    <p class="text-muted mb-1">Available Wallet Balance</p>
+                    <h3
+                        [class]="(walletBalance()?.balance || 0) >= (emiToPay()?.totalEmi || 0) ? 'text-success' : 'text-danger'">
+                        ₹{{ walletBalance()?.balance || 0 | number }}
+                    </h3>
+                </div>
+
+                <!-- EMI Details -->
+                <div class="bg-light p-3 rounded mb-3">
+                    <h6 class="mb-3"><strong>Payment Details</strong></h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-1 text-muted small">Loan ID</p>
+                            <p class="mb-2"><strong>#{{ emiToPay()?.loanId }}</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1 text-muted small">Installment</p>
+                            <p class="mb-2"><strong>#{{ emiToPay()?.installmentNo }}</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1 text-muted small">Due Date</p>
+                            <p class="mb-2"><strong>{{ emiToPay()?.dueDate | date: 'mediumDate' }}</strong></p>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1 text-muted small">EMI Amount</p>
+                            <p class="mb-0"><strong class="text-primary fs-5">₹{{ emiToPay()?.totalEmi | number
+                                    }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Balance Check Warning -->
+                <div *ngIf="(walletBalance()?.balance || 0) < (emiToPay()?.totalEmi || 0)" class="alert alert-warning">
+                    <strong>⚠️ Insufficient Balance!</strong> Please add ₹{{ (emiToPay()?.totalEmi || 0) -
+                    (walletBalance()?.balance || 0) | number }} to proceed.
+                </div>
+
+                <!-- Success Info -->
+                <div *ngIf="(walletBalance()?.balance || 0) >= (emiToPay()?.totalEmi || 0)" class="alert alert-info">
+                    <strong>💡 Pay from Wallet:</strong> Amount will be deducted from your wallet balance.
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="emiToPay.set(null)">Cancel</button>
-                <button type="button" class="btn btn-success" (click)="confirmPayEmi()" [disabled]="paying()">
+                <button type="button" class="btn btn-success btn-lg" (click)="confirmPayEmi()"
+                    [disabled]="paying() || (walletBalance()?.balance || 0) < (emiToPay()?.totalEmi || 0)">
                     <span *ngIf="!paying()">Pay ₹{{ emiToPay()?.totalEmi | number }}</span>
-                    <span *ngIf="paying()"><span
-                            class="spinner-border spinner-border-sm me-2"></span>Processing...</span>
+                    <span *ngIf="paying()"><span class="spinner-border spinner-border-sm me-2"></span>Processing
+                        Payment...</span>
                 </button>
             </div>
         </div>

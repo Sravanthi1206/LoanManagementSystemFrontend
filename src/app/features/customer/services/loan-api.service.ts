@@ -83,7 +83,11 @@ export class LoanApiService {
   }
 
   topupWallet(userId: number, amount: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/payments/wallet/topup`, { userId, amount });
+    const params = new HttpParams()
+      .set('userId', userId.toString())
+      .set('amount', amount.toString())
+      .set('description', 'Wallet Top-up');
+    return this.http.post(`${this.apiUrl}/wallet/credit`, null, { params });
   }
 
   // Document APIs
