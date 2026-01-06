@@ -48,11 +48,10 @@
                 <!-- Credit Assessment -->
                 <div class="section">
                     <h3>Credit Assessment</h3>
-                    <div class="credit-info">
+                    <div class="credit-info" *ngIf="loan()!.creditScore">
                         <div class="credit-score-display" [class]="getCreditScoreClass(loan()!.creditScore || 0)">
-                            <span class="score">{{ loan()!.creditScore || 'N/A' }}</span>
-                            <span class="label" *ngIf="loan()!.creditScore">{{ getCreditScoreLabel(loan()!.creditScore!)
-                                }}</span>
+                            <span class="score">{{ loan()!.creditScore }}</span>
+                            <span class="label">{{ getCreditScoreLabel(loan()!.creditScore!) }}</span>
                         </div>
                         <div class="risk-category" *ngIf="loan()!.riskCategory">
                             <span class="risk-label">Risk Category</span>
@@ -61,7 +60,12 @@
                             </span>
                         </div>
                     </div>
-                    <p *ngIf="!loan()!.creditScore" class="no-credit">Credit check not performed yet</p>
+                    <div *ngIf="!loan()!.creditScore" class="credit-check-pending">
+                        <p class="no-credit">Credit check not performed yet</p>
+                        <button class="btn-credit-check" (click)="runCreditCheck()" [disabled]="runningCreditCheck()">
+                            {{ runningCreditCheck() ? 'Checking...' : '🔍 Run Credit Check' }}
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Applicant Details -->
@@ -190,7 +194,13 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-approve" [disabled]="approveForm.invalid || processing()">
+                        <div class="credit-check-required" *ngIf="!loan()!.creditScore">
+                            <p class="warning-text">⚠️ Credit check required before approval</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-approve"
+                            [disabled]="approveForm.invalid || processing() || !loan()!.creditScore"
+                            [title]="!loan()!.creditScore ? 'Run credit check first' : 'Approve this loan'">
                             {{ processing() ? 'Processing...' : 'Approve Loan' }}
                         </button>
                     </form>

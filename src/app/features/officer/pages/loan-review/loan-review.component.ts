@@ -24,6 +24,7 @@ export class LoanReviewComponent implements OnInit {
     customerLoans = signal<Loan[]>([]);
     loading = signal(true);
     processing = signal(false);
+    runningCreditCheck = signal(false);
     activeTab = signal<'approve' | 'reject'>('approve');
 
     toastMessage = signal('');
@@ -177,6 +178,27 @@ export class LoanReviewComponent implements OnInit {
         this.toastMessage.set(message);
         this.toastType.set(type);
         setTimeout(() => this.toastMessage.set(''), 3000);
+    }
+
+    runCreditCheck(): void {
+        const loan = this.loan();
+        if (!loan) return;
+
+        this.runningCreditCheck.set(true);
+        // Generate random score between 550-850
+        const creditScore = Math.floor(Math.random() * 300) + 550;
+
+        this.officerApi.performCreditCheck(loan.loanId, creditScore, 'Credit check performed via review page').subscribe({
+            next: (updatedLoan) => {
+                this.loan.set(updatedLoan);
+                this.showToast(`Credit check complete: Score ${creditScore}`, 'success');
+                this.runningCreditCheck.set(false);
+            },
+            error: (err) => {
+                this.showToast(err.message || 'Failed to perform credit check', 'error');
+                this.runningCreditCheck.set(false);
+            }
+        });
     }
 
     approveLoan(): void {
