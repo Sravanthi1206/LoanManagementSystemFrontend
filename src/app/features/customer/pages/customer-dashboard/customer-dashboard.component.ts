@@ -189,4 +189,8 @@ export class CustomerDashboardComponent implements OnInit {
       }
     });
   }
+
+  goToApplyLoan(): void {
+    this.router.navigate(['/customer/apply-loan']);
+  }
 }
