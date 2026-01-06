@@ -1,0 +1,10 @@
+.navbar-admin {
+    background-color: #555555;
+    padding: 1rem 1.5rem;
+}
+
+.navbar-admin .navbar-brand {
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+}

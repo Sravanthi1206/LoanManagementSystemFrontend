@@ -1,0 +1,21 @@
+.navbar-customer {
+    background-color: #1a1a1a;
+    padding: 1rem 1.5rem;
+}
+
+.navbar-customer .navbar-brand {
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+    text-decoration: none;
+}
+
+.nav-icon {
+    font-size: 1.25rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nav-icon:hover {
+    opacity: 0.8;
+}
