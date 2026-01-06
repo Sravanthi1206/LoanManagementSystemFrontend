@@ -82,6 +82,10 @@ export class LoanApiService {
     return this.http.get<PageResponse<any>>(`${this.apiUrl}/wallet/transactions`, { params });
   }
 
+  topupWallet(userId: number, amount: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/payments/wallet/topup`, { userId, amount });
+  }
+
   // Document APIs
   uploadDocument(applicationId: number, documentType: string, file: File): Observable<any> {
     const formData = new FormData();

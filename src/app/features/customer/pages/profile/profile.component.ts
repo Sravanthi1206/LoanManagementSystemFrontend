@@ -206,9 +206,10 @@ export class ProfileComponent implements OnInit {
         this.message.set('Profile updated successfully!');
         this.isError.set(false);
         this.profileForm.patchValue({ password: '' });
-        // Update local storage
+        // Update auth state properly
         const storedUser = this.authState.getUser();
-        if (storedUser) {
+        const token = localStorage.getItem('token');
+        if (storedUser && token) {
           const merged = {
             ...storedUser,
             firstName: formValue.firstName,
@@ -217,7 +218,8 @@ export class ProfileComponent implements OnInit {
             dateOfBirth: formValue.dateOfBirth,
             panCard: formValue.panCard
           };
-          localStorage.setItem('user', JSON.stringify(merged));
+          this.authState.setAuth(token, merged);
+          this.user.set(merged);
         }
       },
       error: (err) => {

@@ -190,6 +190,44 @@ export class CustomerDashboardComponent implements OnInit {
     });
   }
 
+  // Wallet Top-up
+  showTopupModal = signal(false);
+  topupAmount = signal(0);
+  processingTopup = signal(false);
+
+  openTopupModal(): void {
+    this.showWalletModal.set(false);
+    this.showTopupModal.set(true);
+    this.topupAmount.set(1000); // Default amount
+  }
+
+  setTopupAmount(amount: number): void {
+    this.topupAmount.set(amount);
+  }
+
+  confirmTopup(): void {
+    const user = this.authState.getUser();
+    if (!user || this.topupAmount() <= 0) return;
+
+    this.processingTopup.set(true);
+
+    // Simulating payment gateway delay
+    setTimeout(() => {
+      this.loanApi.topupWallet(user.id, this.topupAmount()).subscribe({
+        next: () => {
+          this.processingTopup.set(false);
+          this.showTopupModal.set(false);
+          this.showToast(`₹${this.topupAmount().toLocaleString()} added to wallet successfully!`);
+          this.loadDashboardData(user.id);
+        },
+        error: (err) => {
+          this.processingTopup.set(false);
+          this.showToast(err.message || 'Wallet top-up failed', 'error');
+        }
+      });
+    }, 1500); // Simulate processing time
+  }
+
   goToApplyLoan(): void {
     this.router.navigate(['/customer/apply-loan']);
   }

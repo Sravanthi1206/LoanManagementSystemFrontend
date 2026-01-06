@@ -407,12 +407,76 @@
                                 </td>
                                 <td>{{ txn.description || '-' }}</td>
                             </tr>
-                        </tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-primary" (click)="openTopupModal()">
+                    💳 Top Up Wallet
+                </button>
                 <button type="button" class="btn btn-secondary" (click)="showWalletModal.set(false)">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wallet Top-up Modal (Simulated Payment Gateway) -->
+<div class="modal-overlay" *ngIf="showTopupModal()" (click)="showTopupModal.set(false)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">💳 Add Money to Wallet</h5>
+                <button type="button" class="btn-close btn-close-white"
+                    (click)="showTopupModal.set(false)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Current Balance -->
+                <div class="text-center mb-4">
+                    <p class="text-muted mb-1">Current Wallet Balance</p>
+                    <h3 class="text-primary">₹{{ walletBalance()?.balance || 0 | number }}</h3>
+                </div>
+
+                <!-- Quick Amount Buttons -->
+                <p class="text-center mb-2"><strong>Select Amount</strong></p>
+                <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                    <button class="btn" [class]="topupAmount() === 1000 ? 'btn-primary' : 'btn-outline-primary'"
+                        (click)="setTopupAmount(1000)">₹1,000</button>
+                    <button class="btn" [class]="topupAmount() === 5000 ? 'btn-primary' : 'btn-outline-primary'"
+                        (click)="setTopupAmount(5000)">₹5,000</button>
+                    <button class="btn" [class]="topupAmount() === 10000 ? 'btn-primary' : 'btn-outline-primary'"
+                        (click)="setTopupAmount(10000)">₹10,000</button>
+                    <button class="btn" [class]="topupAmount() === 25000 ? 'btn-primary' : 'btn-outline-primary'"
+                        (click)="setTopupAmount(25000)">₹25,000</button>
+                    <button class="btn" [class]="topupAmount() === 50000 ? 'btn-primary' : 'btn-outline-primary'"
+                        (click)="setTopupAmount(50000)">₹50,000</button>
+                </div>
+
+                <!-- Custom Amount Input -->
+                <div class="mb-3">
+                    <label class="form-label">Or enter custom amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" class="form-control" [value]="topupAmount()"
+                            (input)="setTopupAmount(+$any($event.target).value)" min="100" placeholder="Enter amount">
+                    </div>
+                    <small class="text-muted">Minimum: ₹100 | Maximum: ₹1,00,000</small>
+                </div>
+
+                <!-- Payment Method (Simulated) -->
+                <div class="alert alert-info">
+                    <strong>💡 Demo Mode:</strong> This is a simulated payment gateway.
+                    Click "Pay Now" to instantly add funds to your wallet.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="showTopupModal.set(false)">Cancel</button>
+                <button type="button" class="btn btn-success btn-lg" (click)="confirmTopup()"
+                    [disabled]="processingTopup() || topupAmount() < 100">
+                    <span *ngIf="!processingTopup()">Pay ₹{{ topupAmount() | number }}</span>
+                    <span *ngIf="processingTopup()">
+                        <span class="spinner-border spinner-border-sm me-2"></span>Processing Payment...
+                    </span>
+                </button>
             </div>
         </div>
     </div>
