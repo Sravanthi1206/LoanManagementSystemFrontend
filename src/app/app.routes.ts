@@ -58,6 +58,11 @@ export const routes: Routes = [
                     .then(m => m.ApplyLoanComponent)
             },
             {
+                path: 'notifications',
+                loadComponent: () => import('./features/customer/pages/notifications/notifications.component')
+                    .then(m => m.NotificationsComponent)
+            },
+            {
                 path: '',
                 redirectTo: 'dashboard',
                 pathMatch: 'full'

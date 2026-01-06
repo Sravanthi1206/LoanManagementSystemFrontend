@@ -1,0 +1,44 @@
+<div class="notifications-page">
+    <div class="page-header">
+        <button class="btn-back" (click)="goBack()">← Back</button>
+        <h1>Notifications</h1>
+        <span class="unread-badge" *ngIf="unreadCount() > 0">{{ unreadCount() }} unread</span>
+    </div>
+
+    <div class="actions-bar">
+        <div class="filter-tabs">
+            <button [class.active]="filter() === 'all'" (click)="filter.set('all')">All</button>
+            <button [class.active]="filter() === 'unread'" (click)="filter.set('unread')">Unread</button>
+        </div>
+        <button class="btn-mark-all" (click)="markAllAsRead()" *ngIf="unreadCount() > 0">
+            Mark all as read
+        </button>
+    </div>
+
+    <div *ngIf="loading()" class="loading">
+        <div class="spinner"></div>
+        <p>Loading notifications...</p>
+    </div>
+
+    <div *ngIf="!loading() && filteredNotifications().length === 0" class="empty-state">
+        <span class="empty-icon">🔔</span>
+        <p>No notifications yet</p>
+    </div>
+
+    <div class="notifications-list" *ngIf="!loading() && filteredNotifications().length > 0">
+        <div class="notification-item" *ngFor="let notification of filteredNotifications()"
+            [class.unread]="!notification.read" (click)="markAsRead(notification)">
+            <div class="notification-icon">{{ getTypeIcon(notification.type) }}</div>
+            <div class="notification-content">
+                <div class="notification-header">
+                    <span class="notification-type">{{ getTypeLabel(notification.type) }}</span>
+                    <span class="notification-time">{{ formatDate(notification.createdAt) }}</span>
+                </div>
+                <h3 class="notification-title">{{ notification.title }}</h3>
+                <p class="notification-message">{{ notification.message }}</p>
+                <span class="loan-id" *ngIf="notification.loanId">Loan #{{ notification.loanId }}</span>
+            </div>
+            <div class="unread-dot" *ngIf="!notification.read"></div>
+        </div>
+    </div>
+</div>
