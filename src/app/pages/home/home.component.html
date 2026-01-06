@@ -7,6 +7,7 @@
         <div class="hero-cta">
             <a *ngIf="!isLoggedIn()" routerLink="/auth/register" class="btn btn-primary">Get Started</a>
             <a *ngIf="isLoggedIn()" [routerLink]="getDashboardLink()" class="btn btn-primary">Go to Dashboard</a>
+            <a routerLink="/emi-calculator" class="btn btn-outline btn-calculator">🧮 EMI Calculator</a>
             <a routerLink="/auth/login" class="btn btn-outline" *ngIf="!isLoggedIn()">Login</a>
         </div>
         <div class="hero-stats">
