@@ -51,7 +51,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         // Server-side error
         switch (error.status) {
           case 0:
-            errorMessage = 'Unable to connect to the server. Please check if the application is running.';
+            errorMessage = 'We are unable to reach our servers at the moment. Please try again shortly.';
             break;
           case 400:
             // Bad Request - validation errors
