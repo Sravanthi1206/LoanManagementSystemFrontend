@@ -58,6 +58,7 @@ export class AuthApiService {
         this.router.navigate(['/officer/dashboard']);
         break;
       case 'ADMIN':
+      case 'ROOT_ADMIN':
         this.router.navigate(['/admin/dashboard']);
         break;
       default:

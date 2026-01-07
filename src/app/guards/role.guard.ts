@@ -10,7 +10,9 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const requiredRole = route.data['role'] as UserRole;
   const userRole = authState.getRole();
 
-  if (userRole === requiredRole) {
+  // ROOT_ADMIN can access ADMIN routes
+  if (userRole === requiredRole ||
+    (userRole === 'ROOT_ADMIN' && requiredRole === 'ADMIN')) {
     return true;
   }
 
@@ -23,6 +25,7 @@ export const roleGuard: CanActivateFn = (route, state) => {
       router.navigate(['/officer/dashboard']);
       break;
     case 'ADMIN':
+    case 'ROOT_ADMIN':
       router.navigate(['/admin/dashboard']);
       break;
     default:

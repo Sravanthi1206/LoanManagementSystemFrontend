@@ -74,6 +74,15 @@ export class AuthStateService {
   }
 
   hasRole(role: UserRole): boolean {
-    return this.role() === role;
+    const currentRole = this.role();
+    if (currentRole === role) return true;
+    // ROOT_ADMIN has all ADMIN privileges
+    if (currentRole === 'ROOT_ADMIN' && role === 'ADMIN') return true;
+    return false;
+  }
+
+  isAdmin(): boolean {
+    const role = this.role();
+    return role === 'ADMIN' || role === 'ROOT_ADMIN';
   }
 }
